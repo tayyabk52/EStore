@@ -102,21 +102,27 @@ export default function HomePage() {
           {/* Luxury Action Buttons */}
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center animate-fade-in-up animation-delay-800">
             <Button 
+              asChild
               size="lg" 
               className="group relative bg-white text-black hover:bg-white/95 hover:scale-105 hover:-translate-y-1 px-12 sm:px-16 py-4 sm:py-5 text-sm sm:text-base font-medium tracking-[0.1em] uppercase border-0 shadow-lg hover:shadow-2xl transition-all duration-500 ease-out overflow-hidden"
             >
-              <span className="relative z-10 transition-all duration-300 group-hover:tracking-[0.15em]">Explore Collection</span>
-              <div className="absolute inset-0 bg-gradient-to-r from-neutral-50 to-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-left" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" />
+              <Link href="/women">
+                <span className="relative z-10 transition-all duration-300 group-hover:tracking-[0.15em]">Explore Collection</span>
+                <div className="absolute inset-0 bg-gradient-to-r from-neutral-50 to-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-left" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/20 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" />
+              </Link>
             </Button>
             <Button 
+              asChild
               size="lg" 
               variant="outline" 
               className="group relative border-white border text-white hover:text-black hover:scale-105 hover:-translate-y-1 bg-transparent hover:bg-white px-12 sm:px-16 py-4 sm:py-5 text-sm sm:text-base font-medium tracking-[0.1em] uppercase transition-all duration-500 ease-out overflow-hidden"
             >
-              <span className="relative z-10 transition-all duration-300 group-hover:tracking-[0.15em]">Our Story</span>
-              <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-left" />
-              <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" />
+              <Link href="/about">
+                <span className="relative z-10 transition-all duration-300 group-hover:tracking-[0.15em]">Our Story</span>
+                <div className="absolute inset-0 bg-white transform scale-x-0 group-hover:scale-x-100 transition-transform duration-500 ease-out origin-left" />
+                <div className="absolute inset-0 opacity-0 group-hover:opacity-100 transition-opacity duration-300 bg-gradient-to-r from-transparent via-white/30 to-transparent animate-[shimmer_2s_ease-in-out_infinite]" />
+              </Link>
             </Button>
           </div>
           </div>
