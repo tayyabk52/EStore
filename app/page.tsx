@@ -2,8 +2,7 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { Card, CardContent } from "@/components/ui/card"
-import { ArrowRight, Star, Truck, Shield, Crown, Calendar, Sparkles } from "lucide-react"
+import { ArrowRight, Truck, Shield, Crown, Calendar, Sparkles } from "lucide-react"
 
 // Custom CSS for luxury animations
 const luxuryStyles = `
@@ -299,7 +298,7 @@ export default function HomePage() {
                 description: "Refined sparkle",
                 href: "/jewelry"
               },
-            ].map((category, index) => (
+            ].map((category) => (
               <Link key={category.name} href={category.href} className="group relative h-64 overflow-hidden cursor-pointer border border-neutral-200 bg-white">
                 <div 
                   className="absolute inset-0 bg-cover bg-center transition-transform duration-500 group-hover:scale-[1.03]"

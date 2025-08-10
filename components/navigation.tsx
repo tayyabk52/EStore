@@ -36,7 +36,7 @@ export function Navigation() {
       setMsgIndex((i) => (i + 1) % topMessages.length)
     }, 4000)
     return () => clearInterval(id)
-  }, [])
+  }, [topMessages.length])
 
   const openMenu = (menu: string) => {
     if (!isDesktop) return
@@ -107,7 +107,7 @@ export function Navigation() {
   const megaMenuData = {
     women: {
       categories: [
-        { title: "NEW IN", items: ["Latest Arrivals", "Trending Now", "Editor's Picks", "Pre-Order"] },
+        { title: "NEW IN", items: ["Latest Arrivals", "Trending Now", "Editor&apos;s Picks", "Pre-Order"] },
         { title: "CLOTHING", items: ["Dresses", "Tops & Blouses", "Jackets & Coats", "Knitwear", "Pants", "Skirts"] },
         { title: "SHOES", items: ["Heels", "Flats", "Boots", "Sneakers", "Sandals"] },
         { title: "ACCESSORIES", items: ["Bags", "Jewelry", "Scarves", "Belts", "Sunglasses"] },
@@ -239,7 +239,7 @@ export function Navigation() {
                               <Crown className="w-4 h-4 mx-4 text-neutral-400" />
                               <div className="w-8 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
                             </div>
-                            <h2 className="text-xl font-light tracking-[0.1em] text-black mb-2">WOMEN'S COLLECTION</h2>
+                            <h2 className="text-xl font-light tracking-[0.1em] text-black mb-2">WOMEN&apos;S COLLECTION</h2>
                             <p className="text-sm text-neutral-600">Sophisticated elegance for the modern woman</p>
                           </div>
                           
@@ -365,7 +365,7 @@ export function Navigation() {
                               <Crown className="w-4 h-4 mx-4 text-neutral-400" />
                               <div className="w-8 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
                             </div>
-                            <h2 className="text-xl font-light tracking-[0.1em] text-black mb-2">MEN'S COLLECTION</h2>
+                            <h2 className="text-xl font-light tracking-[0.1em] text-black mb-2">MEN&apos;S COLLECTION</h2>
                             <p className="text-sm text-neutral-600">Contemporary elegance for the modern gentleman</p>
                           </div>
                           

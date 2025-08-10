@@ -1,6 +1,5 @@
-import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { ArrowRight, Sparkles, Crown, Leaf, Users } from "lucide-react"
+import { Crown, Leaf, Users } from "lucide-react"
 
 export default function EvelonHeritagePage() {
   return (

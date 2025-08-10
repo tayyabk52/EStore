@@ -1,7 +1,7 @@
 "use client"
 
 import { motion } from "framer-motion"
-import { Crown, Leaf, Package, Star, Globe, Heart, Sparkles, Award, Users, TreePine } from "lucide-react"
+import { Crown, Leaf, Package, Globe, Heart, Sparkles, TreePine } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
@@ -86,7 +86,7 @@ export default function AboutPage() {
             </h1>
             
             <p className="text-xl md:text-2xl text-neutral-600 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
-              Pakistan's first premium fashion house built on sustainability. 
+              Pakistan&apos;s first premium fashion house built on sustainability. 
               <span className="block mt-2 text-lg md:text-xl text-neutral-500">Where luxury meets responsibility.</span>
             </p>
 
@@ -128,14 +128,14 @@ export default function AboutPage() {
             >
               <div className="space-y-8">
                 <p className="text-xl text-neutral-600 leading-[1.8] font-light">
-                  Born from a vision to revolutionize Pakistani fashion, EVELON emerged as the country's 
+                  Born from a vision to revolutionize Pakistani fashion, EVELON emerged as the country&apos;s 
                   first luxury brand to prioritize environmental responsibility without compromising on elegance. 
                   <em className="text-neutral-500 font-normal">We believe that true luxury lies not just in exquisite design, but in the positive impact we create.</em>
                 </p>
                 
                 <p className="text-xl text-neutral-600 leading-[1.8] font-light">
                   Our journey began with a simple yet powerful idea: to craft premium fashion that honors 
-                  both our rich Pakistani heritage and our planet's future. Every thread, every stitch, 
+                  both our rich Pakistani heritage and our planet&apos;s future. Every thread, every stitch, 
                   and every package reflects our commitment to sustainable luxury.
                 </p>
 
@@ -167,7 +167,7 @@ export default function AboutPage() {
             <h2 className="text-4xl md:text-5xl font-extralight tracking-[0.1em] text-black mb-8">GO GREEN MISSION</h2>
             <div className="w-20 h-px bg-gradient-to-r from-transparent via-green-600 to-transparent mx-auto mb-8"></div>
             <p className="text-lg text-neutral-600 max-w-3xl mx-auto leading-relaxed">
-              Leading Pakistan's fashion revolution with eco-conscious luxury that doesn't compromise on style
+              Leading Pakistan&apos;s fashion revolution with eco-conscious luxury that doesn&apos;t compromise on style
             </p>
           </motion.div>
 

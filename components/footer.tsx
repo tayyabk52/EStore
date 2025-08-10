@@ -1,5 +1,5 @@
 import Link from "next/link"
-import { Facebook, Instagram, Twitter, Youtube, Mail, MapPin, Phone, Crown, Leaf } from "lucide-react"
+import { Facebook, Instagram, Twitter, Youtube, Mail, Phone, Crown } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Input } from "@/components/ui/input"
 
