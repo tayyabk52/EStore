@@ -179,7 +179,7 @@ export async function POST(request: NextRequest) {
       throw existingError
     }
 
-    const primaryImage = variant.Product.ProductImage.find(img => img.isPrimary) || variant.Product.ProductImage[0]
+    const primaryImage = (variant.Product as any).ProductImage?.find((img: any) => img.isPrimary) || (variant.Product as any).ProductImage?.[0]
 
     if (existingItem) {
       // Update existing item quantity
