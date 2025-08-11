@@ -90,9 +90,9 @@ export default function ProductsListClient({ products }: { products: ListingProd
     const arr = products.slice()
     switch (sortBy) {
       case 'price-low':
-        return arr.sort((a, b) => (getPrice(a) ?? Infinity) - (getPrice(b) ?? Infinity))
+        return arr.sort((a, b) => (getPriceInfo(a).price ?? Infinity) - (getPriceInfo(b).price ?? Infinity))
       case 'price-high':
-        return arr.sort((a, b) => (getPrice(b) ?? 0) - (getPrice(a) ?? 0))
+        return arr.sort((a, b) => (getPriceInfo(b).price ?? 0) - (getPriceInfo(a).price ?? 0))
       case 'newest':
         return arr // Placeholder: server already orders by createdAt
       default:
@@ -241,7 +241,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                         <span className="hidden sm:inline">★ </span>FEATURED
                       </span>
                     )}
-                    {p.isBestseller && (
+                    {(p as any).isBestseller && (
                       <span className="inline-block bg-amber-50/95 backdrop-blur-sm text-amber-800 px-2 sm:px-3 py-1 sm:py-1.5 text-[8px] sm:text-[9px] font-bold tracking-[0.1em] sm:tracking-[0.15em] uppercase shadow-lg border border-amber-200 rounded-full">
                         <span className="hidden sm:inline">♔ </span>BEST
                       </span>
@@ -519,7 +519,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                                 <span className="lg:inline hidden">★ </span>FEATURED
                               </span>
                             )}
-                            {p.isBestseller && (
+                            {(p as any).isBestseller && (
                               <span className="bg-amber-50/95 backdrop-blur-sm text-amber-800 px-2 lg:px-3 py-1 lg:py-1.5 text-[8px] lg:text-[9px] font-bold tracking-[0.1em] lg:tracking-[0.15em] uppercase shadow-xl border border-amber-200 rounded-full">
                                 <span className="lg:inline hidden">♔ </span>BEST
                               </span>
@@ -711,10 +711,10 @@ function getCurrencySymbol(code?: string) {
 
 function renderInlineTags(p: ListingProduct) {
   const tags: string[] = []
-  if (p.isFeatured) tags.push('Featured')
-  if (p.isBestseller) tags.push('Bestseller') 
-  if (p.isNewArrival) tags.push('New')
-  if (p.isOnSale) tags.push('Sale')
+  if ((p as any).isFeatured) tags.push('Featured')
+  if ((p as any).isBestseller) tags.push('Bestseller') 
+  if ((p as any).isNewArrival) tags.push('New')
+  if ((p as any).isOnSale) tags.push('Sale')
   if (tags.length === 0) return null
   return tags.map((t) => (
     <span 

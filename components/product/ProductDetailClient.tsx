@@ -274,7 +274,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
             </div>
           )}
 
-          {product.details && typeof product.details === 'object' && (
+          {(product as any).details && typeof (product as any).details === 'object' && (
             <div className="border-t border-neutral-200 pt-6">
               <div className="mb-4">
                 <h3 className="text-base font-medium tracking-wide text-black uppercase mb-2">
@@ -283,7 +283,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 <div className="w-8 h-px bg-black"></div>
               </div>
               <dl className="space-y-4">
-                {Object.entries(product.details as Record<string, any>).map(([key, value]) => (
+                {Object.entries((product as any).details as Record<string, any>).map(([key, value]) => (
                   <div key={key} className="flex justify-between items-center">
                     <dt className="text-xs tracking-wider text-neutral-500 uppercase font-medium">
                       {formatKey(key)}
@@ -593,7 +593,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           )}
 
           {/* Premium Product Specifications */}
-          {product.details && typeof product.details === 'object' && (
+          {(product as any).details && typeof (product as any).details === 'object' && (
             <div className="pt-8 border-t border-neutral-200">
               <div className="mb-6">
                 <h3 className="text-xl font-light tracking-[0.1em] text-black uppercase mb-4">
@@ -602,7 +602,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 <div className="w-12 h-px bg-black"></div>
               </div>
               <dl className="grid grid-cols-2 gap-x-8 gap-y-6">
-                {Object.entries(product.details as Record<string, any>).map(([key, value]) => (
+                {Object.entries((product as any).details as Record<string, any>).map(([key, value]) => (
                   <div key={key} className="flex flex-col space-y-2">
                     <dt className="text-xs tracking-[0.15em] text-neutral-500 uppercase font-medium">
                       {formatKey(key)}

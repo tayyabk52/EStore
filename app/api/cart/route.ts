@@ -208,7 +208,7 @@ export async function POST(request: NextRequest) {
           quantity,
           unitPrice: variant.price,
           currency: variant.currency,
-          productName: variant.Product.title,
+          productName: (variant.Product as any).title,
           sku: variant.sku,
           imageUrl: primaryImage?.url,
           updatedAt: new Date().toISOString()
