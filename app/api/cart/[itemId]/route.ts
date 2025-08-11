@@ -36,7 +36,7 @@ export async function PUT(
       return NextResponse.json({ error: 'Cart item not found' }, { status: 404 })
     }
 
-    if (cartItem.Cart.userId !== userId) {
+    if ((cartItem as any).Cart.userId !== userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
@@ -105,7 +105,7 @@ export async function DELETE(
       return NextResponse.json({ error: 'Cart item not found' }, { status: 404 })
     }
 
-    if (cartItem.Cart.userId !== userId) {
+    if ((cartItem as any).Cart.userId !== userId) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 403 })
     }
 
