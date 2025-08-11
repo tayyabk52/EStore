@@ -118,5 +118,30 @@
   }
   body {
     @apply bg-background text-foreground;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+    /* Prevent page width jump when scrollbars appear with overlays/menus */
+    overflow-y: auto;
+  }
+  html {
+    /* Reserve gutter for scrollbars to prevent layout shift without extra left padding */
+    scrollbar-gutter: stable;
+  }
+  .font-inter {
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, 'Segoe UI', Roboto, 'Helvetica Neue', Arial, sans-serif;
+  }
+}
+
+@layer utilities {
+  .scrollbar-hide {
+    -ms-overflow-style: none;
+    scrollbar-width: none;
+  }
+  .scrollbar-hide::-webkit-scrollbar {
+    display: none;
+  }
+  
+  /* Prevent layout shift when modals/dropdowns manipulate body overflow */
+  .prevent-scroll-shift {
+    scrollbar-gutter: stable both-edges;
   }
 }

@@ -22,102 +22,79 @@ import {
   Star,
   DollarSign,
   Calendar,
-  BarChart3
+  BarChart3,
+  Loader2,
+  CheckCircle,
+  Folder,
+  ImageIcon,
+  Tag,
+  ArrowDown,
+  ChevronRight
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 
 // Secret key for admin access
-const ADMIN_SECRET_KEY = "evelon2024" // This will be moved to environment variables
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+
+interface DashboardStats {
+  totalProducts: number
+  totalCategories: number
+  totalOrders: number
+  totalRevenue: number
+  recentProducts: any[]
+  recentOrders: any[]
+  lowStockProducts: any[]
+}
 
 export default function AdminDashboard() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
-  const [searchParams, setSearchParams] = useState("")
-  const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
+  const [stats, setStats] = useState<DashboardStats | null>(null)
+  const [loading, setLoading] = useState(true)
+  const [error, setError] = useState<string | null>(null)
 
   // Check authentication on component mount
   useEffect(() => {
     const urlParams = new URLSearchParams(window.location.search)
     const key = urlParams.get('key')
-    
-    if (key === ADMIN_SECRET_KEY) {
+    const envKey = ADMIN_SECRET_KEY
+    const stored = typeof window !== 'undefined' ? window.sessionStorage.getItem('ADMIN_KEY') : null
+
+    if (key && envKey && key === envKey) {
+      window.sessionStorage.setItem('ADMIN_KEY', key)
       setIsAuthenticated(true)
-    } else {
-      // Redirect to access denied if no valid key
-      window.location.href = '/admin/access-denied'
+      fetchDashboardStats()
+      return
     }
+    if (stored && envKey && stored === envKey) {
+      setIsAuthenticated(true)
+      fetchDashboardStats()
+      return
+    }
+    window.location.href = '/admin/access-denied'
   }, [])
 
-  // Sample data for demonstration
-  const storeStats = {
-    totalProducts: 247,
-    totalOrders: 89,
-    totalCustomers: 156,
-    totalRevenue: 45230,
-    recentOrders: 12,
-    lowStockItems: 8
+  const fetchDashboardStats = async () => {
+    try {
+      setLoading(true)
+      const response = await fetch('/api/admin/dashboard', {
+        headers: {
+          'x-admin-key': ADMIN_SECRET_KEY
+        }
+      })
+      
+      if (!response.ok) {
+        throw new Error('Failed to fetch dashboard stats')
+      }
+      
+      const data = await response.json()
+      setStats(data)
+    } catch (err) {
+      setError(err instanceof Error ? err.message : 'Failed to fetch dashboard data')
+    } finally {
+      setLoading(false)
+    }
   }
-
-  const recentProducts = [
-    {
-      id: 1,
-      name: "Italian Wool Blend Blazer",
-      category: "Clothing",
-      price: 299,
-      stock: 15,
-      status: "active",
-      image: "https://images.unsplash.com/photo-1594633312681-425c7b97ccd1?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-    },
-    {
-      id: 2,
-      name: "Premium Cashmere Sweater",
-      category: "Clothing",
-      price: 189,
-      stock: 8,
-      status: "active",
-      image: "https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1170&q=80"
-    },
-    {
-      id: 3,
-      name: "Leather Chelsea Boots",
-      category: "Footwear",
-      price: 249,
-      stock: 3,
-      status: "low-stock",
-      image: "https://images.unsplash.com/photo-1608256246200-53e635b5b665?ixlib=rb-4.0.3&auto=format&fit=crop&w=1074&q=80"
-    }
-  ]
-
-  const quickActions = [
-    {
-      title: "Add Product",
-      description: "Create new product listing",
-      icon: Plus,
-      href: "/admin/products/new",
-      color: "bg-blue-500"
-    },
-    {
-      title: "Manage Categories",
-      description: "Organize product categories",
-      icon: Package,
-      href: "/admin/categories",
-      color: "bg-green-500"
-    },
-    {
-      title: "View Orders",
-      description: "Process customer orders",
-      icon: ShoppingCart,
-      href: "/admin/orders",
-      color: "bg-purple-500"
-    },
-    {
-      title: "Store Settings",
-      description: "Configure store options",
-      icon: Settings,
-      href: "/admin/settings",
-      color: "bg-gray-500"
-    }
-  ]
 
   if (!isAuthenticated) {
     return (
@@ -126,6 +103,33 @@ export default function AdminDashboard() {
           <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
           <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
           <p className="text-gray-600">Invalid or missing admin key</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (loading) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Loading Dashboard</h1>
+          <p className="text-gray-600">Fetching your store data...</p>
+        </div>
+      </div>
+    )
+  }
+
+  if (error) {
+    return (
+      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
+        <div className="text-center">
+          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h1>
+          <p className="text-gray-600">{error}</p>
+          <Button onClick={fetchDashboardStats} className="mt-4">
+            Retry
+          </Button>
         </div>
       </div>
     )
@@ -140,7 +144,7 @@ export default function AdminDashboard() {
             <div className="flex items-center space-x-4">
               <div className="flex items-center space-x-2">
                 <Crown className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Evelon Admin</h1>
+                <h1 className="text-2xl font-bold text-gray-900">Store Admin</h1>
               </div>
               <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
                 Admin Panel
@@ -148,10 +152,6 @@ export default function AdminDashboard() {
             </div>
             
             <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <Settings className="w-4 h-4 mr-2" />
-                Settings
-              </Button>
               <Button variant="outline" size="sm">
                 <Eye className="w-4 h-4 mr-2" />
                 View Store
@@ -168,25 +168,73 @@ export default function AdminDashboard() {
           animate={{ opacity: 1, y: 0 }}
           className="mb-8"
         >
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Store Dashboard</h2>
-          <p className="text-gray-600">Manage your products, orders, and store settings from one central location.</p>
+          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Store Admin</h2>
+          <p className="text-gray-600">Manage your online store with a simple 3-step process: Create Categories → Add Products → Manage Orders</p>
+        </motion.div>
+
+        {/* How Your Store Works */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.1 }}
+          className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8"
+        >
+          <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
+            <Package className="w-5 h-5 mr-2" />
+            How Your E-Commerce Store Works
+          </h3>
+          
+          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+            <div className="text-center">
+              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
+                <Folder className="w-6 h-6" />
+              </div>
+              <h4 className="font-semibold text-blue-900 mb-2">1. Categories</h4>
+              <p className="text-sm text-blue-700">
+                Organize your products into categories like "Clothing", "Electronics", etc. 
+                Categories can have subcategories (e.g., "Men's Clothing" under "Clothing").
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
+                <Package className="w-6 h-6" />
+              </div>
+              <h4 className="font-semibold text-green-900 mb-2">2. Products</h4>
+              <p className="text-sm text-green-700">
+                Each product has basic info (name, description) plus variants (different sizes, colors) 
+                with their own prices and stock levels, plus images.
+              </p>
+            </div>
+            
+            <div className="text-center">
+              <div className="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
+                <ShoppingCart className="w-6 h-6" />
+              </div>
+              <h4 className="font-semibold text-purple-900 mb-2">3. Orders</h4>
+              <p className="text-sm text-purple-700">
+                When customers buy specific product variants, orders are created with 
+                the exact items, quantities, and shipping details.
+              </p>
+            </div>
+          </div>
         </motion.div>
 
         {/* Stats Overview */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
+          transition={{ delay: 0.2 }}
           className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
         >
           <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-blue-100 rounded-lg">
-                <Package className="w-6 h-6 text-blue-600" />
+                <Folder className="w-6 h-6 text-blue-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Products</p>
-                <p className="text-2xl font-bold text-gray-900">{storeStats.totalProducts}</p>
+                <p className="text-sm font-medium text-gray-600">Categories</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.totalCategories || 0}</p>
               </div>
             </div>
           </div>
@@ -194,11 +242,11 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-green-100 rounded-lg">
-                <ShoppingCart className="w-6 h-6 text-green-600" />
+                <Package className="w-6 h-6 text-green-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{storeStats.totalOrders}</p>
+                <p className="text-sm font-medium text-gray-600">Products</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.totalProducts || 0}</p>
               </div>
             </div>
           </div>
@@ -206,11 +254,11 @@ export default function AdminDashboard() {
           <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
             <div className="flex items-center">
               <div className="p-2 bg-purple-100 rounded-lg">
-                <Users className="w-6 h-6 text-purple-600" />
+                <ShoppingCart className="w-6 h-6 text-purple-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Customers</p>
-                <p className="text-2xl font-bold text-gray-900">{storeStats.totalCustomers}</p>
+                <p className="text-sm font-medium text-gray-600">Orders</p>
+                <p className="text-2xl font-bold text-gray-900">{stats?.totalOrders || 0}</p>
               </div>
             </div>
           </div>
@@ -221,53 +269,107 @@ export default function AdminDashboard() {
                 <DollarSign className="w-6 h-6 text-yellow-600" />
               </div>
               <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Total Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${storeStats.totalRevenue.toLocaleString()}</p>
+                <p className="text-sm font-medium text-gray-600">Revenue</p>
+                <p className="text-2xl font-bold text-gray-900">${(stats?.totalRevenue || 0).toLocaleString()}</p>
               </div>
             </div>
           </div>
         </motion.div>
 
-        {/* Quick Actions */}
+        {/* Quick Setup Guide */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
+          transition={{ delay: 0.3 }}
           className="mb-8"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Actions</h3>
-          <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-4">
-            {quickActions.map((action, index) => (
-              <Link key={index} href={action.href}>
-                <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200 hover:shadow-md transition-shadow cursor-pointer">
-                  <div className="flex items-center space-x-4">
-                    <div className={`p-3 rounded-lg ${action.color}`}>
-                      <action.icon className="w-6 h-6 text-white" />
+          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Setup Guide</h3>
+          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
+            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
+              
+              {/* Step 1: Categories */}
+              <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`} className="group">
+                <div className="p-6 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        1
+                      </div>
+                      <h4 className="font-semibold text-gray-900">Setup Categories</h4>
                     </div>
-                    <div>
-                      <h4 className="font-semibold text-gray-900">{action.title}</h4>
-                      <p className="text-sm text-gray-600">{action.description}</p>
-                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
                   </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p className="flex items-center"><Folder className="w-4 h-4 mr-2" />Create main categories (e.g., Clothing)</p>
+                    <p className="flex items-center"><Folder className="w-4 h-4 mr-2" />Add subcategories (e.g., Men's, Women's)</p>
+                    <p className="flex items-center"><Settings className="w-4 h-4 mr-2" />Configure display settings</p>
+                  </div>
+                  <Button size="sm" className="mt-4 w-full">
+                    Manage Categories
+                  </Button>
                 </div>
               </Link>
-            ))}
+
+              {/* Step 2: Products */}
+              <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`} className="group">
+                <div className="p-6 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        2
+                      </div>
+                      <h4 className="font-semibold text-gray-900">Add Products</h4>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-600" />
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p className="flex items-center"><Package className="w-4 h-4 mr-2" />Create product (name, description)</p>
+                    <p className="flex items-center"><Tag className="w-4 h-4 mr-2" />Add variants (price, stock, size/color)</p>
+                    <p className="flex items-center"><ImageIcon className="w-4 h-4 mr-2" />Upload product images</p>
+                  </div>
+                  <Button size="sm" className="mt-4 w-full">
+                    Add Products
+                  </Button>
+                </div>
+              </Link>
+
+              {/* Step 3: Orders */}
+              <div className="p-6 rounded-lg border border-gray-200 bg-gray-50">
+                <div className="flex items-center justify-between mb-4">
+                  <div className="flex items-center space-x-3">
+                    <div className="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                      3
+                    </div>
+                    <h4 className="font-semibold text-gray-900">Manage Orders</h4>
+                  </div>
+                  <CheckCircle className="w-5 h-5 text-gray-400" />
+                </div>
+                <div className="space-y-2 text-sm text-gray-600">
+                  <p className="flex items-center"><ShoppingCart className="w-4 h-4 mr-2" />Orders appear when customers buy</p>
+                  <p className="flex items-center"><TrendingUp className="w-4 h-4 mr-2" />Track sales and revenue</p>
+                  <p className="flex items-center"><Users className="w-4 h-4 mr-2" />Manage customer information</p>
+                </div>
+                <Button size="sm" className="mt-4 w-full" variant="outline" disabled>
+                  Coming Soon
+                </Button>
+              </div>
+            </div>
           </div>
         </motion.div>
 
-        {/* Recent Products & Quick Management */}
+        {/* Recent Products & Status */}
         <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
           {/* Recent Products */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.3 }}
+            transition={{ delay: 0.4 }}
             className="bg-white rounded-lg shadow-sm border border-gray-200"
           >
             <div className="p-6 border-b border-gray-200">
               <div className="flex items-center justify-between">
                 <h3 className="text-lg font-semibold text-gray-900">Recent Products</h3>
-                <Link href="/admin/products">
+                <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`}>
                   <Button variant="outline" size="sm">
                     View All <ArrowRight className="w-4 h-4 ml-2" />
                   </Button>
@@ -277,103 +379,129 @@ export default function AdminDashboard() {
             
             <div className="p-6">
               <div className="space-y-4">
-                {recentProducts.map((product) => (
-                  <div key={product.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50">
-                    <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200">
-                      <img 
-                        src={product.image} 
-                        alt={product.name}
-                        className="w-full h-full object-cover"
-                      />
-                    </div>
-                    <div className="flex-1">
-                      <h4 className="font-medium text-gray-900">{product.name}</h4>
-                      <p className="text-sm text-gray-600">{product.category} • ${product.price}</p>
-                      <div className="flex items-center space-x-2 mt-1">
-                        <span className={`px-2 py-1 text-xs rounded-full ${
-                          product.status === 'low-stock' 
-                            ? 'bg-red-100 text-red-800' 
-                            : 'bg-green-100 text-green-800'
-                        }`}>
-                          {product.status === 'low-stock' ? 'Low Stock' : 'In Stock'}
-                        </span>
-                        <span className="text-xs text-gray-500">Stock: {product.stock}</span>
+                {stats?.recentProducts && stats.recentProducts.length > 0 ? (
+                  stats.recentProducts.map((product: any) => (
+                    <div key={product.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50">
+                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200">
+                        {product.images?.[0]?.url ? (
+                          <img 
+                            src={product.images[0].url} 
+                            alt={product.title}
+                            className="w-full h-full object-cover"
+                          />
+                        ) : (
+                          <div className="w-full h-full flex items-center justify-center text-gray-400">
+                            <Package className="w-6 h-6" />
+                          </div>
+                        )}
                       </div>
+                      <div className="flex-1">
+                        <h4 className="font-medium text-gray-900">{product.title}</h4>
+                        <p className="text-sm text-gray-600">
+                          {product.category?.displayName || product.category?.name || 'Uncategorized'}
+                        </p>
+                        <div className="flex items-center space-x-4 mt-1">
+                          <span className="text-sm font-medium text-green-600">
+                            ${product.variants?.[0]?.price || 0}
+                          </span>
+                          <span className={`px-2 py-1 text-xs rounded-full ${
+                            product.variants?.[0]?.stock < 10 
+                              ? 'bg-red-100 text-red-800' 
+                              : 'bg-green-100 text-green-800'
+                          }`}>
+                            Stock: {product.variants?.[0]?.stock || 0}
+                          </span>
+                          <span className="text-xs text-gray-500">
+                            {product.variants?.length || 0} variants
+                          </span>
+                        </div>
+                      </div>
+                      <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}&edit=${product.id}`}>
+                        <Button size="sm" variant="outline">
+                          <Edit className="w-4 h-4" />
+                        </Button>
+                      </Link>
                     </div>
-                    <div className="flex space-x-2">
-                      <Button size="sm" variant="outline">
-                        <Edit className="w-4 h-4" />
-                      </Button>
-                      <Button size="sm" variant="outline">
-                        <Eye className="w-4 h-4" />
-                      </Button>
+                  ))
+                ) : (
+                  <div className="text-center py-8 text-gray-500">
+                    <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
+                    <p className="font-medium">No products yet</p>
+                    <p className="text-sm mb-4">Start by creating categories, then add your products</p>
+                    <div className="space-y-2">
+                      <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`}>
+                        <Button size="sm" variant="outline" className="w-full">
+                          1. Create Categories First
+                        </Button>
+                      </Link>
+                      <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`}>
+                        <Button size="sm" className="w-full">
+                          2. Then Add Products
+                        </Button>
+                      </Link>
                     </div>
                   </div>
-                ))}
+                )}
               </div>
             </div>
           </motion.div>
 
-          {/* Store Configuration */}
+          {/* System Status */}
           <motion.div 
             initial={{ opacity: 0, y: 20 }}
             animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
+            transition={{ delay: 0.5 }}
             className="bg-white rounded-lg shadow-sm border border-gray-200"
           >
             <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Store Configuration</h3>
+              <h3 className="text-lg font-semibold text-gray-900">Store Status</h3>
             </div>
             
-            <div className="p-6">
-              <div className="space-y-4">
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+            <div className="p-6 space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
                   <div>
-                    <h4 className="font-medium text-gray-900">Store Categories</h4>
-                    <p className="text-sm text-gray-600">Manage product categories</p>
+                    <p className="font-medium text-gray-900">Database Connected</p>
+                    <p className="text-sm text-gray-600">Supabase integration working</p>
                   </div>
-                  <Link href="/admin/categories">
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
-                  </Link>
                 </div>
+                <span className="text-sm text-green-600 font-medium">✓ Active</span>
+              </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
+                <div className="flex items-center space-x-3">
+                  <Shield className="w-5 h-5 text-blue-600" />
                   <div>
-                    <h4 className="font-medium text-gray-900">Navigation Menu</h4>
-                    <p className="text-sm text-gray-600">Customize store navigation</p>
+                    <p className="font-medium text-gray-900">Admin Access</p>
+                    <p className="text-sm text-gray-600">Authenticated with secret key</p>
                   </div>
-                  <Link href="/admin/navigation">
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
-                  </Link>
                 </div>
+                <span className="text-sm text-blue-600 font-medium">✓ Secure</span>
+              </div>
 
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
+              <div className={`flex items-center justify-between p-3 rounded-lg ${
+                (stats?.lowStockProducts?.length || 0) > 0 ? 'bg-yellow-50' : 'bg-green-50'
+              }`}>
+                <div className="flex items-center space-x-3">
+                  <Package className={`w-5 h-5 ${
+                    (stats?.lowStockProducts?.length || 0) > 0 ? 'text-yellow-600' : 'text-green-600'
+                  }`} />
                   <div>
-                    <h4 className="font-medium text-gray-900">Featured Content</h4>
-                    <p className="text-sm text-gray-600">Manage homepage sections</p>
+                    <p className="font-medium text-gray-900">Inventory Status</p>
+                    <p className="text-sm text-gray-600">
+                      {(stats?.lowStockProducts?.length || 0) === 0 
+                        ? 'All products well stocked' 
+                        : `${stats?.lowStockProducts?.length} items low on stock`
+                      }
+                    </p>
                   </div>
-                  <Link href="/admin/featured">
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
-                  </Link>
                 </div>
-
-                <div className="flex items-center justify-between p-3 rounded-lg bg-gray-50">
-                  <div>
-                    <h4 className="font-medium text-gray-900">Store Settings</h4>
-                    <p className="text-sm text-gray-600">General store configuration</p>
-                  </div>
-                  <Link href="/admin/settings">
-                    <Button variant="outline" size="sm">
-                      Configure
-                    </Button>
-                  </Link>
-                </div>
+                <span className={`text-sm font-medium ${
+                  (stats?.lowStockProducts?.length || 0) > 0 ? 'text-yellow-600' : 'text-green-600'
+                }`}>
+                  {(stats?.lowStockProducts?.length || 0) === 0 ? '✓ Good' : '⚠ Attention'}
+                </span>
               </div>
             </div>
           </motion.div>
@@ -383,13 +511,19 @@ export default function AdminDashboard() {
         <motion.div 
           initial={{ opacity: 0 }}
           animate={{ opacity: 1 }}
-          transition={{ delay: 0.5 }}
+          transition={{ delay: 0.6 }}
           className="mt-12 text-center text-sm text-gray-500"
         >
-          <p>Admin access via: <code className="bg-gray-100 px-2 py-1 rounded">yourstore.com/admin?key=YOUR_SECRET_KEY</code></p>
-          <p className="mt-2">Keep this URL secure and share only with authorized personnel.</p>
+          <div className="bg-gray-100 rounded-lg p-4">
+            <p className="font-medium text-gray-700 mb-2">🔒 Admin Panel Security</p>
+            <p>This admin panel is secured with a secret key. Keep your admin URL private:</p>
+            <code className="bg-white px-3 py-1 rounded mt-2 inline-block text-gray-800">
+              yourstore.com/admin?key=YOUR_SECRET_KEY
+            </code>
+            <p className="mt-2 text-xs">Only share this URL with authorized store managers.</p>
+          </div>
         </motion.div>
       </div>
     </div>
   )
-} 
+}

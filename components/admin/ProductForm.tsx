@@ -133,14 +133,14 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
     
     // Clear error when field is corrected
     if (errors[field]) {
-      setErrors(prev => ({ ...prev, [field]: '' }))
+      setErrors((prev: any) => ({ ...prev, [field]: '' }))
     }
   }
 
   // Handle array field changes
   const handleArrayChange = (field: string, value: any, action: 'add' | 'remove' | 'update') => {
     setFormData(prev => {
-      const currentArray = prev[field] || []
+      const currentArray = (prev as any)[field] || []
       let newArray
 
       switch (action) {
@@ -271,7 +271,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
             >
               <option value="">Select Subcategory</option>
-              {availableSubcategories.map((subcategory) => (
+              {availableSubcategories.map((subcategory: any) => (
                 <option key={subcategory.id} value={subcategory.id}>
                   {subcategory.displayName}
                 </option>
@@ -462,7 +462,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               Colors
             </label>
             <div className="space-y-2">
-              {formData.colors.map((color, index) => (
+              {formData.colors.map((color: any, index: number) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="text"
@@ -500,7 +500,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               Sizes
             </label>
             <div className="space-y-2">
-              {formData.sizes.map((size, index) => (
+              {formData.sizes.map((size: any, index: number) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="text"
@@ -538,7 +538,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               Tags
             </label>
             <div className="space-y-2">
-              {formData.tags.map((tag, index) => (
+              {formData.tags.map((tag: any, index: number) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="text"
@@ -576,7 +576,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               Materials
             </label>
             <div className="space-y-2">
-              {formData.materials.map((material, index) => (
+              {formData.materials.map((material: any, index: number) => (
                 <div key={index} className="flex items-center space-x-2">
                   <input
                     type="text"
