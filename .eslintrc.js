@@ -11,6 +11,7 @@ module.exports = {
     "prefer-const": "warn",
     // Additional rules that might be causing issues
     "no-unused-vars": "warn",
-    "react-hooks/exhaustive-deps": "warn"
+    "react-hooks/exhaustive-deps": "warn",
+    "@typescript-eslint/no-empty-object-type": "warn"
   }
 }
