@@ -119,7 +119,14 @@ export async function POST(req: NextRequest) {
       }
     })
 
-    const created = await productService.create(productData, images, variants)
+    // Build collections payload if present
+    const collectionsPayload: { collectionId: string; sortOrder?: number }[] | undefined = Array.isArray(body.collections)
+      ? body.collections
+      : Array.isArray(body.collectionIds)
+        ? body.collectionIds.map((cid: string, idx: number) => ({ collectionId: cid, sortOrder: body.collectionSortOrders?.[idx] ?? 0 }))
+        : undefined
+
+    const created = await productService.create(productData, images, variants, collectionsPayload)
     return NextResponse.json({ id: created.id }, { status: 201 })
   } catch (e: any) {
     console.error('Error creating product:', e)

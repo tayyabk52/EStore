@@ -243,10 +243,24 @@ export const productService = {
       .single()
 
     if (error) throw error
-    return data
+
+    // Fetch collections mapping for this product
+    const { data: collectionsData, error: collectionsError } = await supabaseAdmin
+      .from('ProductCollection')
+      .select('collectionId, sortOrder')
+      .eq('productId', id)
+
+    if (collectionsError) throw collectionsError
+
+    return { ...data, collections: collectionsData || [] }
   },
 
-  async create(product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>, images?: any[], variants?: any[]) {
+  async create(
+    product: Omit<Product, 'id' | 'createdAt' | 'updatedAt'>,
+    images?: any[],
+    variants?: any[],
+    collections?: { collectionId: string; sortOrder?: number }[]
+  ) {
     // Start a transaction
     const nowIso = new Date().toISOString()
     const { data: productData, error: productError } = await supabaseAdmin
@@ -313,10 +327,31 @@ export const productService = {
       if (variantsError) throw variantsError
     }
 
+    // Insert collections if provided
+    if (collections && collections.length > 0) {
+      const rows = collections
+        .filter(c => !!c.collectionId)
+        .map(c => ({
+          productId,
+          collectionId: c.collectionId,
+          sortOrder: typeof c.sortOrder === 'number' ? c.sortOrder : 0,
+        }))
+      const { error: pcError } = await supabaseAdmin
+        .from('ProductCollection')
+        .insert(rows)
+      if (pcError) throw pcError
+    }
+
     return productData
   },
 
-  async update(id: string, updates: Partial<Product>, images?: any[], variants?: any[]) {
+  async update(
+    id: string,
+    updates: Partial<Product>,
+    images?: any[],
+    variants?: any[],
+    collections?: { collectionId: string; sortOrder?: number }[]
+  ) {
     // Update product
     const { data: productData, error: productError } = await supabaseAdmin
       .from('Product')
@@ -396,6 +431,29 @@ export const productService = {
           .insert(variantsWithProductId)
 
         if (variantsError) throw variantsError
+      }
+    }
+
+    // Update collections if provided
+    if (collections) {
+      // Clear existing links
+      await supabaseAdmin
+        .from('ProductCollection')
+        .delete()
+        .eq('productId', id)
+
+      if (collections.length > 0) {
+        const rows = collections
+          .filter(c => !!c.collectionId)
+          .map(c => ({
+            productId: id,
+            collectionId: c.collectionId,
+            sortOrder: typeof c.sortOrder === 'number' ? c.sortOrder : 0,
+          }))
+        const { error: pcError } = await supabaseAdmin
+          .from('ProductCollection')
+          .insert(rows)
+        if (pcError) throw pcError
       }
     }
 

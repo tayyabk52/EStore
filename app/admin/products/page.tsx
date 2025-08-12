@@ -31,6 +31,8 @@ import {
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
 import type { Category as FrontCategory } from '@/lib/products-frontend'
+// Local admin type for Collection
+interface AdminCollection { id: string; name: string; slug: string }
 
 // Secret key for admin access
 const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
@@ -95,6 +97,7 @@ export default function ProductsManagement() {
   const [isAuthenticated, setIsAuthenticated] = useState(false)
   const [products, setProducts] = useState<Product[]>([])
   const [categories, setCategories] = useState<Category[]>([])
+  const [collections, setCollections] = useState<AdminCollection[]>([])
   const [editingProduct, setEditingProduct] = useState<Product | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
   const [searchTerm, setSearchTerm] = useState("")
@@ -161,6 +164,15 @@ export default function ProductsManagement() {
           const categoriesData = await categoriesRes.json()
           setCategories(categoriesData)
         }
+
+        // Fetch collections
+        const collectionsRes = await fetch('/api/admin/collections', {
+          headers: adminKey ? { 'x-admin-key': adminKey } : {},
+        })
+        if (collectionsRes.ok) {
+          const data = await collectionsRes.json()
+          setCollections((data.collections || []).map((c: any) => ({ id: c.id, name: c.name, slug: c.slug })))
+        }
       } catch (e) {
         console.error('Error fetching data:', e)
       }
@@ -181,9 +193,23 @@ export default function ProductsManagement() {
   })
 
   // Handle product edit
-  const handleEdit = (product: Product) => {
-    setEditingProduct({ ...product })
-    setShowAddForm(true)
+  const handleEdit = async (product: Product) => {
+    try {
+      const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
+      const res = await fetch(`/api/admin/products/${product.id}`, {
+        headers: adminKey ? { 'x-admin-key': adminKey } : {}
+      })
+      if (res.ok) {
+        const full = await res.json()
+        setEditingProduct(full)
+      } else {
+        setEditingProduct({ ...product })
+      }
+    } catch {
+      setEditingProduct({ ...product })
+    } finally {
+      setShowAddForm(true)
+    }
   }
 
   const handleView = (product: Product) => {
@@ -595,6 +621,7 @@ export default function ProductsManagement() {
                 <ProductForm
                   product={editingProduct}
                   categories={categories}
+                  collections={collections}
                   onSave={handleSave}
                   onCancel={() => {
                     setShowAddForm(false)
@@ -620,11 +647,13 @@ export default function ProductsManagement() {
 function ProductForm({ 
   product, 
   categories, 
+  collections,
   onSave, 
   onCancel 
 }: { 
   product: Product | null
   categories: Category[]
+  collections: { id: string; name: string; slug: string }[]
   onSave: (data: any) => void
   onCancel: () => void
 }) {
@@ -641,6 +670,17 @@ function ProductForm({
   const [detailsText, setDetailsText] = useState(
     JSON.stringify(((product as any)?.details ?? {}), null, 2)
   )
+  // Collections state
+  const [selectedCollections, setSelectedCollections] = useState<string[]>(
+    (product as any)?.collectionIds || []
+  )
+  const [collectionSortOrders, setCollectionSortOrders] = useState<Record<string, number>>(() => {
+    const ids: string[] = (product as any)?.collectionIds || []
+    const orders: number[] = (product as any)?.collectionSortOrders || []
+    const map: Record<string, number> = {}
+    ids.forEach((id, idx) => { map[id] = typeof orders[idx] === 'number' ? orders[idx] : 0 })
+    return map
+  })
   // Build breadcrumb labels for category selector to avoid ambiguity
   const idToCategoryInForm = new Map<string, Category>()
   categories.forEach((c) => idToCategoryInForm.set(c.id, c))
@@ -802,6 +842,14 @@ function ProductForm({
             }
           ]
     )
+
+    // Sync collections
+    setSelectedCollections((product as any)?.collectionIds || [])
+    const ids: string[] = (product as any)?.collectionIds || []
+    const orders: number[] = (product as any)?.collectionSortOrders || []
+    const map: Record<string, number> = {}
+    ids.forEach((id, idx) => { map[id] = typeof orders[idx] === 'number' ? orders[idx] : 0 })
+    setCollectionSortOrders(map)
   }, [product])
 
   const handleSubmit = (e: React.FormEvent) => {
@@ -815,7 +863,9 @@ function ProductForm({
     const productData = {
       ...formData,
       variants: variants.filter(v => v.sku && v.price > 0),
-      images: images.filter(img => img.url)
+      images: images.filter(img => img.url),
+      collectionIds: selectedCollections,
+      collectionSortOrders: selectedCollections.map(id => collectionSortOrders[id] ?? 0)
     }
     
     onSave(productData)
@@ -973,6 +1023,54 @@ function ProductForm({
                 ))}
               </select>
             </div>
+          </div>
+
+          {/* Collections */}
+          <div className="mt-6">
+            <h4 className="text-sm font-medium text-gray-900 mb-3">Collections</h4>
+            {collections.length === 0 ? (
+              <p className="text-sm text-gray-500">No collections yet. Create one in Admin → Collections.</p>
+            ) : (
+              <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
+                {collections.map((c) => {
+                  const checked = selectedCollections.includes(c.id)
+                  return (
+                    <label key={c.id} className="flex items-start gap-3 p-3 border rounded-lg hover:bg-gray-50">
+                      <input
+                        type="checkbox"
+                        checked={checked}
+                        onChange={(e) => {
+                          const isOn = e.target.checked
+                          setSelectedCollections(prev => {
+                            if (isOn) return Array.from(new Set([...prev, c.id]))
+                            return prev.filter(id => id !== c.id)
+                          })
+                        }}
+                        className="mt-1"
+                      />
+                      <div className="flex-1">
+                        <div className="flex items-center justify-between">
+                          <div>
+                            <div className="text-sm font-medium text-gray-900">{c.name}</div>
+                            <div className="text-xs text-gray-500">/{c.slug}</div>
+                          </div>
+                          <div className="flex items-center gap-2">
+                            <span className="text-xs text-gray-500">Sort</span>
+                            <input
+                              type="number"
+                              value={collectionSortOrders[c.id] ?? 0}
+                              onChange={(e) => setCollectionSortOrders(prev => ({ ...prev, [c.id]: parseInt(e.target.value) || 0 }))}
+                              className="w-20 px-2 py-1 border rounded"
+                              disabled={!checked}
+                            />
+                          </div>
+                        </div>
+                      </div>
+                    </label>
+                  )
+                })}
+              </div>
+            )}
           </div>
           
           <div className="mt-6">

@@ -169,7 +169,7 @@ export default function AdminDashboard() {
           className="mb-8"
         >
           <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Store Admin</h2>
-          <p className="text-gray-600">Manage your online store with a simple 3-step process: Create Categories → Add Products → Manage Orders</p>
+          <p className="text-gray-600">Manage your online store with a simple 4-step process: Create Categories → Setup Collections → Add Products → Manage Orders</p>
         </motion.div>
 
         {/* How Your Store Works */}
@@ -310,13 +310,36 @@ export default function AdminDashboard() {
                 </div>
               </Link>
 
-              {/* Step 2: Products */}
+              {/* Step 2: Collections */}
+              <Link href={`/admin/collections?key=${ADMIN_SECRET_KEY}`} className="group">
+                <div className="p-6 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer">
+                  <div className="flex items-center justify-between mb-4">
+                    <div className="flex items-center space-x-3">
+                      <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
+                        2
+                      </div>
+                      <h4 className="font-semibold text-gray-900">Setup Collections</h4>
+                    </div>
+                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600" />
+                  </div>
+                  <div className="space-y-2 text-sm text-gray-600">
+                    <p className="flex items-center"><Star className="w-4 h-4 mr-2" />Create featured collections</p>
+                    <p className="flex items-center"><ImageIcon className="w-4 h-4 mr-2" />Add compelling imagery</p>
+                    <p className="flex items-center"><Crown className="w-4 h-4 mr-2" />Display on homepage</p>
+                  </div>
+                  <Button size="sm" className="mt-4 w-full">
+                    Manage Collections
+                  </Button>
+                </div>
+              </Link>
+
+              {/* Step 3: Products */}
               <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`} className="group">
                 <div className="p-6 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer">
                   <div className="flex items-center justify-between mb-4">
                     <div className="flex items-center space-x-3">
                       <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        2
+                        3
                       </div>
                       <h4 className="font-semibold text-gray-900">Add Products</h4>
                     </div>
@@ -333,12 +356,12 @@ export default function AdminDashboard() {
                 </div>
               </Link>
 
-              {/* Step 3: Orders */}
+              {/* Step 4: Orders */}
               <div className="p-6 rounded-lg border border-gray-200 bg-gray-50">
                 <div className="flex items-center justify-between mb-4">
                   <div className="flex items-center space-x-3">
                     <div className="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      3
+                      4
                     </div>
                     <h4 className="font-semibold text-gray-900">Manage Orders</h4>
                   </div>

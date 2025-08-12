@@ -12,7 +12,10 @@ export async function GET(
   try {
     const { id } = await params
     const product = await productService.getById(id)
-    return NextResponse.json(product)
+    // Normalize collections to arrays for admin UI
+    const collectionIds = (product.collections || []).map((c: any) => c.collectionId)
+    const collectionSortOrders = (product.collections || []).map((c: any) => c.sortOrder)
+    return NextResponse.json({ ...product, collectionIds, collectionSortOrders })
   } catch (error) {
     console.error('Error fetching product:', error)
     return NextResponse.json({ error: 'Failed to fetch product' }, { status: 500 })
@@ -30,9 +33,16 @@ export async function PATCH(
   try {
     const { id } = await params
     const body = await req.json()
-    const { images, variants, ...updates } = body
+    const { images, variants, collections, collectionIds, collectionSortOrders, ...updates } = body
 
-    const updated = await productService.update(id, updates, images, variants)
+    // Prefer explicit collections array; else build from ids + sort orders
+    const collectionsPayload = Array.isArray(collections)
+      ? collections
+      : Array.isArray(collectionIds)
+        ? collectionIds.map((cid: string, idx: number) => ({ collectionId: cid, sortOrder: collectionSortOrders?.[idx] ?? 0 }))
+        : undefined
+
+    const updated = await productService.update(id, updates, images, variants, collectionsPayload)
     return NextResponse.json(updated)
   } catch (error) {
     console.error('Error updating product:', error)

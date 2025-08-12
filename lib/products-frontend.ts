@@ -232,6 +232,117 @@ export const productsFrontendService = {
   }
 }
 
+export interface Collection {
+  id: string
+  name: string
+  slug: string
+  description?: string
+  imageUrl?: string
+  isFeatured: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export const collectionsService = {
+  async getAllCollections() {
+    const { data, error } = await supabase
+      .from('Collection')
+      .select('*')
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching collections:', error)
+      return []
+    }
+
+    return data || []
+  },
+
+  async getFeaturedCollections() {
+    const { data, error } = await supabase
+      .from('Collection')
+      .select('*')
+      .eq('isFeatured', true)
+      .order('name', { ascending: true })
+
+    if (error) {
+      console.error('Error fetching featured collections:', error)
+      return []
+    }
+
+    return data || []
+  },
+
+  async getCollectionBySlug(slug: string) {
+    const { data, error } = await supabase
+      .from('Collection')
+      .select('*')
+      .eq('slug', slug)
+      .single()
+
+    if (error) {
+      console.error('Error fetching collection by slug:', error)
+      return null
+    }
+
+    return data
+  },
+
+  async getProductsForCollection(slug: string) {
+    // 1) find collection id
+    const { data: col, error: colErr } = await supabase
+      .from('Collection')
+      .select('id')
+      .eq('slug', slug)
+      .single()
+    if (colErr || !col) {
+      console.error('Error fetching collection id:', colErr)
+      return []
+    }
+
+    // 2) join ProductCollection then fetch products with primary image and default variant
+    const { data: pcRows, error: pcErr } = await supabase
+      .from('ProductCollection')
+      .select('productId, sortOrder')
+      .eq('collectionId', col.id)
+      .order('sortOrder', { ascending: true })
+    if (pcErr) {
+      console.error('Error fetching product-collection rows:', pcErr)
+      return []
+    }
+    const productIds = (pcRows || []).map(r => r.productId)
+    if (productIds.length === 0) return []
+
+    const { data: products, error: prodErr } = await supabase
+      .from('Product')
+      .select(`
+        *,
+        category:Category(id, name, displayName, slug),
+        images:ProductImage(id, url, alt, isPrimary, sortOrder),
+        variants:ProductVariant(id, sku, title, price, compareAtPrice, currency, stock, isDefault, attributes)
+      `)
+      .eq('status', 'PUBLISHED')
+      .eq('isActive', true)
+      .in('id', productIds)
+    if (prodErr) {
+      console.error('Error fetching products for collection:', prodErr)
+      return []
+    }
+
+    // Attach sortOrder and return sorted (sortOrder ASC, then createdAt DESC)
+    const sortMap = new Map<string, number>()
+    pcRows!.forEach(r => sortMap.set(r.productId, r.sortOrder ?? 0))
+    return (products || []).sort((a: any, b: any) => {
+      const sa = sortMap.get(a.id) ?? 0
+      const sb = sortMap.get(b.id) ?? 0
+      if (sa !== sb) return sa - sb
+      const da = new Date(a.createdAt || 0).getTime()
+      const db = new Date(b.createdAt || 0).getTime()
+      return db - da
+    })
+  }
+}
+
 export const categoriesFrontendService = {
   async getAllCategories() {
     const { data, error } = await supabase
