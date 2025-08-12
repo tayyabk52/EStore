@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const userId = authResult.user!.id
 
     // Get or create wishlist for user
-    let { data: wishlist, error: wishlistError } = await serverSupabase
+    const { data: wishlist, error: wishlistError } = await serverSupabase
       .from('Wishlist')
       .select('*')
       .eq('userId', userId)
@@ -114,7 +114,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create wishlist
-    let { data: wishlist, error: wishlistError } = await serverSupabase
+    const { data: wishlist, error: wishlistError } = await serverSupabase
       .from('Wishlist')
       .select('*')
       .eq('userId', userId)

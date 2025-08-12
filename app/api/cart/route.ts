@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const userId = authResult.user!.id
 
     // Get or create active cart for user
-    let { data: cart, error: cartError } = await serverSupabase
+    const { data: cart, error: cartError } = await serverSupabase
       .from('Cart')
       .select('*')
       .eq('userId', userId)
@@ -139,8 +139,8 @@ export async function POST(request: NextRequest) {
       return NextResponse.json({ error: 'Insufficient stock' }, { status: 400 })
     }
 
-    // Get or create cart
-    let { data: cart, error: cartError } = await serverSupabase
+    // Get or create cart  
+    const { data: cart, error: cartError } = await serverSupabase
       .from('Cart')
       .select('*')
       .eq('userId', userId)

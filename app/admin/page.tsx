@@ -9,27 +9,17 @@ import {
   ShoppingCart, 
   TrendingUp, 
   Settings, 
-  Plus,
   Eye,
   Edit,
-  Trash2,
-  Search,
-  Filter,
-  Grid,
-  List,
   ArrowRight,
   Crown,
   Star,
   DollarSign,
-  Calendar,
-  BarChart3,
   Loader2,
   CheckCircle,
   Folder,
   ImageIcon,
-  Tag,
-  ArrowDown,
-  ChevronRight
+  Tag
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import Link from "next/link"
