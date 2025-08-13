@@ -12,7 +12,7 @@ function verifyAdmin(request: NextRequest) {
   return true
 }
 
-export async function PUT(request: NextRequest, { params }: { params: { id: string } }) {
+export async function PUT(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (!verifyAdmin(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
@@ -20,7 +20,7 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
 
     const body = await request.json()
     const { name, slug, description, imageUrl, isFeatured } = body
-    const { id } = params
+    const { id } = await params
 
     if (!name || !slug) {
       return NextResponse.json({ error: 'Name and slug are required' }, { status: 400 })
@@ -58,13 +58,13 @@ export async function PUT(request: NextRequest, { params }: { params: { id: stri
   }
 }
 
-export async function DELETE(request: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(request: NextRequest, { params }: { params: Promise<{ id: string }> }) {
   try {
     if (!verifyAdmin(request)) {
       return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
     }
 
-    const { id } = params
+    const { id } = await params
 
     // First check if collection exists
     const { data: existingCollection } = await supabase
