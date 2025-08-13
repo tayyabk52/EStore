@@ -27,8 +27,6 @@ export function Navigation() {
   const [activeDropdown, setActiveDropdown] = useState<string | null>(null)
   const [isDesktop, setIsDesktop] = useState(false)
   const navRef = useRef<HTMLDivElement | null>(null)
-  const [menuTop, setMenuTop] = useState<number>(80)
-  const openTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const closeTimerRef = useRef<ReturnType<typeof setTimeout> | null>(null)
   const [openMobileSection, setOpenMobileSection] = useState<string | null>(null)
   const [hasMounted, setHasMounted] = useState(false)
@@ -112,24 +110,37 @@ export function Navigation() {
 
   const openMenu = (menu: string) => {
     if (!isDesktop) return
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    if (openTimerRef.current) clearTimeout(openTimerRef.current)
-    // Luxury timing - immediate open, no delay for premium feel
-    openTimerRef.current = setTimeout(() => {
-      setActiveDropdown(menu)
-    }, 0)
+    
+    // Clear any existing timers
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
+    
+    // Immediate open for premium feel
+    setActiveDropdown(menu)
   }
 
   const closeMenuDelayed = () => {
     if (!isDesktop) return
-    if (openTimerRef.current) clearTimeout(openTimerRef.current)
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
-    // Premium delay - gives user time to navigate without closing too quickly
-    closeTimerRef.current = setTimeout(() => setActiveDropdown(null), 300)
+    
+    // Clear existing close timer
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+    }
+    
+    // Smooth delay for navigation
+    closeTimerRef.current = setTimeout(() => {
+      setActiveDropdown(null)
+      closeTimerRef.current = null
+    }, 200)
   }
 
   const cancelDelayedClose = () => {
-    if (closeTimerRef.current) clearTimeout(closeTimerRef.current)
+    if (closeTimerRef.current) {
+      clearTimeout(closeTimerRef.current)
+      closeTimerRef.current = null
+    }
   }
 
   useEffect(() => {
@@ -158,15 +169,21 @@ export function Navigation() {
     setHasMounted(true)
   }, [])
 
+  // Cleanup timers on unmount
   useEffect(() => {
-    const recalcTop = () => {
-      const h = navRef.current?.getBoundingClientRect().height ?? 80
-      setMenuTop(Math.ceil(h))
+    return () => {
+      if (closeTimerRef.current) {
+        clearTimeout(closeTimerRef.current)
+      }
+      if (accountCloseTimerRef.current) {
+        clearTimeout(accountCloseTimerRef.current)
+      }
+      if (accountOpenTimerRef.current) {
+        clearTimeout(accountOpenTimerRef.current)
+      }
     }
-    recalcTop()
-    window.addEventListener('resize', recalcTop)
-    return () => window.removeEventListener('resize', recalcTop)
   }, [])
+
 
   // Lock body scroll only for the mobile drawer (avoid layout shift on desktop)
   useEffect(() => {
@@ -440,47 +457,55 @@ export function Navigation() {
               >
                 <Link 
                       href={`/products?cat=${root.slug}`} 
-                  className="text-sm font-medium tracking-wider text-black hover:text-gray-800 transition-all duration-300 py-2 flex items-center relative group/nav overflow-hidden"
+                  className={`text-sm font-medium tracking-wider transition-all duration-300 py-2 flex items-center relative group/nav z-[70] ${
+                    activeDropdown === root.slug ? 'text-black' : 'text-black hover:text-gray-700'
+                  }`}
                 >
-                      <span className="relative z-10 transition-transform duration-300 group-hover/nav:scale-[1.02]">
+                      <span className="relative z-10">
                         {root.title.toUpperCase()}
                       </span>
-                  <ChevronDown className="w-3 h-3 ml-1 opacity-60 transition-all duration-300 group-hover:opacity-90 group-hover:rotate-180 group-hover:scale-110" />
+                  <ChevronDown className={`w-3 h-3 ml-1 transition-all duration-300 ${
+                    activeDropdown === root.slug 
+                      ? 'opacity-100 rotate-180 text-black' 
+                      : 'opacity-60 group-hover:opacity-90 group-hover:rotate-180'
+                  }`} />
                       {/* Premium underline effect */}
-                      <div className="absolute bottom-0 left-0 w-0 h-0.5 bg-gradient-to-r from-black via-gray-800 to-black transition-all duration-500 group-hover/nav:w-full" />
+                      <div className={`absolute bottom-0 left-0 h-0.5 bg-gradient-to-r from-black via-gray-800 to-black transition-all duration-300 ${
+                    activeDropdown === root.slug ? 'w-full' : 'w-0 group-hover/nav:w-full'
+                  }`} />
                 </Link>
                 
                 <AnimatePresence mode="wait">
                       {isDesktop && activeDropdown === root.slug && (
                     <motion.div 
                       className="fixed left-0 right-0 z-[60] bg-white/96 backdrop-blur-2xl border-t border-neutral-200/60 shadow-[0_20px_80px_rgba(0,0,0,0.12)] overflow-hidden"
-                      style={{ top: menuTop }}
-                      initial={{ opacity: 0, y: -16, scale: 0.96, filter: "blur(8px)" }}
-                      animate={{ opacity: 1, y: 0, scale: 1, filter: "blur(0px)" }}
-                      exit={{ opacity: 0, y: -12, scale: 0.97, filter: "blur(4px)" }}
+                      style={{ 
+                        top: 'calc(100px + 1px)',
+                        maxHeight: 'calc(100vh - 120px)'
+                      }}
+                      initial={{ opacity: 0, y: -8 }}
+                      animate={{ opacity: 1, y: 0 }}
+                      exit={{ opacity: 0, y: -4 }}
                       transition={{ 
-                        duration: 0.6, 
-                        ease: [0.16, 1, 0.3, 1],
-                        opacity: { duration: 0.4 },
-                        scale: { duration: 0.5 },
-                        filter: { duration: 0.3 }
+                        duration: 0.3, 
+                        ease: [0.16, 1, 0.3, 1]
                       }}
                       onMouseEnter={cancelDelayedClose}
                       onMouseLeave={closeMenuDelayed}
                     >
                       <div className="absolute inset-0 bg-gradient-to-b from-white/50 via-white/80 to-white/50" />
-                      <div className="relative w-full max-w-[1300px] mx-auto px-6 lg:px-8">
-                        <div className="py-12 lg:py-16">
-                          <div className="text-center mb-10 lg:mb-12">
-                            <div className="flex items-center justify-center mb-4">
+                      <div className="relative w-full max-w-[1400px] mx-auto px-4 sm:px-6 lg:px-8 xl:px-12 overflow-y-auto" style={{ maxHeight: 'inherit' }}>
+                        <div className="py-8 lg:py-12">
+                          <div className="text-center mb-8 lg:mb-10">
+                            <div className="flex items-center justify-center mb-3">
                               <div className="w-8 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
                               <Crown className="w-4 h-4 mx-4 text-neutral-400" />
                               <div className="w-8 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
                             </div>
-                                <h2 className="text-xl font-light tracking-[0.1em] text-black mb-2">{root.title.toUpperCase()}</h2>
+                                <h2 className="text-lg lg:text-xl font-light tracking-[0.1em] text-black mb-2">{root.title.toUpperCase()}</h2>
                                 <p className="text-sm text-neutral-600">{menu.featured.subtitle}</p>
                           </div>
-                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-12 lg:gap-16">
+                          <div className="grid grid-cols-2 lg:grid-cols-5 gap-8 lg:gap-12 xl:gap-16">
                                 {menu.categories.map((category, index) => (
                               <motion.div 
                                     key={`${root.slug}-${index}`}
@@ -517,12 +542,12 @@ export function Navigation() {
                               </motion.div>
                             ))}
                             <motion.div 
-                              className="space-y-5 lg:col-start-5"
+                              className="space-y-4 lg:col-start-5"
                               initial={{ opacity: 0, scale: 0.92, filter: "blur(12px)", rotateY: -10 }}
                               animate={{ opacity: 1, scale: 1, filter: "blur(0px)", rotateY: 0 }}
                                   transition={{ delay: 0.4, duration: 0.8, ease: [0.16, 1, 0.3, 1] }}
                             >
-                              <div className="relative h-64 lg:h-80 overflow-hidden shadow-[0_25px_100px_rgba(0,0,0,0.3)] group rounded-lg hover:shadow-[0_35px_120px_rgba(0,0,0,0.4)] transition-all duration-700 hover:scale-[1.02]">
+                              <div className="relative h-48 lg:h-64 xl:h-72 overflow-hidden shadow-[0_25px_100px_rgba(0,0,0,0.3)] group rounded-lg hover:shadow-[0_35px_120px_rgba(0,0,0,0.4)] transition-all duration-700 hover:scale-[1.02]">
                                     <img src={menu.featured.image} alt={menu.featured.title} className="w-full h-full object-cover transition-all duration-1200 group-hover:scale-115 group-hover:brightness-110 group-hover:saturate-110" />
                                 <div className="absolute inset-0 bg-gradient-to-t from-black/85 via-black/25 to-transparent group-hover:from-black/75 group-hover:via-black/15 transition-all duration-600" />
                                 <div className="absolute inset-0 bg-gradient-to-br from-transparent via-transparent to-black/20 opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
@@ -557,17 +582,16 @@ export function Navigation() {
               </Link>
             </div>
 
-            {/* Premium Backdrop Overlay */}
+            {/* Simplified Backdrop Overlay */}
             <AnimatePresence>
               {isDesktop && activeDropdown && (
                 <motion.div 
-                  className="fixed inset-0 z-50 bg-gradient-to-b from-black/8 via-black/4 to-black/8 backdrop-blur-sm"
-                  style={{ top: menuTop }}
-                  initial={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                  animate={{ opacity: 1, backdropFilter: "blur(4px)" }}
-                  exit={{ opacity: 0, backdropFilter: "blur(0px)" }}
-                  transition={{ duration: 0.5, ease: [0.16, 1, 0.3, 1] }}
-                  onMouseEnter={cancelDelayedClose}
+                  className="fixed inset-0 z-40 bg-black/5"
+                  style={{ top: 'calc(100px + 1px)' }}
+                  initial={{ opacity: 0 }}
+                  animate={{ opacity: 1 }}
+                  exit={{ opacity: 0 }}
+                  transition={{ duration: 0.2 }}
                   onClick={() => setActiveDropdown(null)}
                 />
               )}
