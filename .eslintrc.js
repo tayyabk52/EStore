@@ -8,7 +8,7 @@ module.exports = {
     "@typescript-eslint/no-explicit-any": "warn", 
     "react/no-unescaped-entities": "warn",
     "@next/next/no-img-element": "warn",
-    "prefer-const": "warn",
+    "prefer-const": "off",
     // Additional rules that might be causing issues
     "no-unused-vars": "warn",
     "react-hooks/exhaustive-deps": "warn",

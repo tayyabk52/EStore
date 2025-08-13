@@ -11,7 +11,7 @@ export async function GET(request: NextRequest) {
     const userId = authResult.user!.id
 
     // Get or create active cart for user
-    const { data: cart, error: cartError } = await serverSupabase
+    let { data: cart, error: cartError } = await serverSupabase
       .from('Cart')
       .select('*')
       .eq('userId', userId)
@@ -140,7 +140,7 @@ export async function POST(request: NextRequest) {
     }
 
     // Get or create cart  
-    const { data: cart, error: cartError } = await serverSupabase
+    let { data: cart, error: cartError } = await serverSupabase
       .from('Cart')
       .select('*')
       .eq('userId', userId)
