@@ -1,6 +1,6 @@
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
-import { getOptimizedImageUrl, FALLBACK_IMAGES } from "@/lib/image-utils"
+import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { SmartImage } from "@/components/ui/smart-image"
 
 interface Collection {
@@ -18,7 +18,7 @@ interface CollectionCardProps {
 }
 
 // Large Hero Card (500px height)
-export function HeroCard({ collection, priority = false }: CollectionCardProps) {
+export function HeroCard({ collection }: CollectionCardProps) {
   const imageUrl = collection.imageUrl || FALLBACK_IMAGES.hero
   
   return (

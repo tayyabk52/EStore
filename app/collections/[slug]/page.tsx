@@ -2,9 +2,10 @@ import { notFound } from "next/navigation"
 import { collectionsService } from "@/lib/products-frontend"
 import ProductsListClient from "@/components/product/ProductsListClient"
 
-export default async function CollectionPage({ params }: { params: { slug: string } }) {
-  const collection = await collectionsService.getCollectionBySlug(params.slug)
-  const products = await collectionsService.getProductsForCollection(params.slug)
+export default async function CollectionPage({ params }: { params: Promise<{ slug: string }> }) {
+  const { slug } = await params
+  const collection = await collectionsService.getCollectionBySlug(slug)
+  const products = await collectionsService.getProductsForCollection(slug)
 
   if (!collection) {
     notFound()
