@@ -1,6 +1,6 @@
 "use client"
 
-import { createContext, useContext, useState, useEffect } from 'react'
+import { createContext, useContext, useState, useEffect, Suspense } from 'react'
 import { usePathname, useSearchParams } from 'next/navigation'
 import { LuxuryLoading, PageLoading } from '@/components/ui/luxury-loading'
 
@@ -15,7 +15,7 @@ interface LoadingContextType {
 
 const LoadingContext = createContext<LoadingContextType | undefined>(undefined)
 
-export function LoadingProvider({ children }: { children: React.ReactNode }) {
+function LoadingProviderInner({ children }: { children: React.ReactNode }) {
   const [isLoading, setIsLoading] = useState(false)
   const [isNavigating, setIsNavigating] = useState(false)
   const [loadingMessage, setLoadingMessage] = useState("La Elegance")
@@ -73,6 +73,18 @@ export function LoadingProvider({ children }: { children: React.ReactNode }) {
       {/* Navigation Loading Bar */}
       {isNavigating && <PageLoading />}
     </LoadingContext.Provider>
+  )
+}
+
+export function LoadingProvider({ children }: { children: React.ReactNode }) {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen flex items-center justify-center">
+        <LuxuryLoading isVisible={true} variant="overlay" message="La Elegance" />
+      </div>
+    }>
+      <LoadingProviderInner>{children}</LoadingProviderInner>
+    </Suspense>
   )
 }
 
