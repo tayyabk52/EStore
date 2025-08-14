@@ -574,9 +574,6 @@ export function Navigation() {
               })}
 
               {/* Simple Navigation Links */}
-              <LoadingLink href="/kids" loadingMessage="Loading Kids Collection..." className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
-                KIDS
-              </LoadingLink>
               <LoadingLink href="/about" loadingMessage="Loading About..." className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
                 ABOUT
               </LoadingLink>
@@ -856,9 +853,6 @@ export function Navigation() {
 
                 {/* Compact Other Navigation Links */}
                 <div className="space-y-1 mt-4 pt-3 border-t border-neutral-100/60">
-                  <Link href="/kids" className="block px-3 py-2.5 text-sm font-medium tracking-[0.05em] text-black hover:bg-neutral-50/60 rounded-lg transition-all duration-200" onClick={() => setIsMobileMenuOpen(false)}>
-                    KIDS
-                  </Link>
                   <Link href="/about" className="block px-3 py-2.5 text-sm font-medium tracking-[0.05em] text-black hover:bg-neutral-50/60 rounded-lg transition-all duration-200" onClick={() => setIsMobileMenuOpen(false)}>
                     ABOUT
                   </Link>

@@ -31,6 +31,7 @@ const luxuryStyles = `
     0%, 100% { box-shadow: inset 0 0 20px rgba(255,255,255,0.05); }
     50% { box-shadow: inset 0 0 40px rgba(255,255,255,0.08); }
   }
+
   
   .animate-fade-in-up { 
     animation: fade-in-up 1.8s cubic-bezier(0.16, 1, 0.3, 1) forwards; 
@@ -60,6 +61,7 @@ const luxuryStyles = `
     animation: shimmer 3s ease-in-out infinite;
     animation-delay: 2s;
   }
+
 `
 
 interface HomePageContentProps {

@@ -211,7 +211,63 @@ export const productsFrontendService = {
   },
 
   async getOnSaleProducts(limit: number = 8) {
-    return this.getAllProducts({ onSale: true, limit })
+    // Strategy: Prefer products that have any variant with a valid compareAtPrice > price.
+    // If none found, fall back to explicit Product.isOnSale flag.
+    try {
+      // 1) Find productIds that truly have discounted variants
+      const { data: variants, error: vErr } = await supabase
+        .from('ProductVariant')
+        .select('productId, price, compareAtPrice, currency, isDefault, stock')
+        .not('compareAtPrice', 'is', null)
+        .limit(2000)
+      if (vErr) {
+        console.error('Error fetching variants for sale products:', vErr)
+      }
+      const discountedProductIds = new Set<string>()
+      ;(variants || []).forEach((v: any) => {
+        const price = Number(v?.price ?? 0)
+        const compareAt = v?.compareAtPrice != null ? Number(v.compareAtPrice) : null
+        if (compareAt != null && compareAt > price) {
+          discountedProductIds.add(v.productId)
+        }
+      })
+
+      let products: any[] = []
+      if (discountedProductIds.size > 0) {
+        const ids = Array.from(discountedProductIds)
+        let query = supabase
+          .from('Product')
+          .select(`
+            *,
+            category:Category(id, name, displayName, slug),
+            images:ProductImage(id, url, alt, isPrimary, sortOrder),
+            variants:ProductVariant(id, sku, title, price, compareAtPrice, currency, stock, isDefault, attributes, barcode, weightGrams, lengthCm, widthCm, heightCm)
+          `)
+          .eq('status', 'PUBLISHED')
+          .eq('isActive', true)
+          .in('id', ids)
+          .order('createdAt', { ascending: false })
+        if (limit) query = query.limit(limit)
+        const { data, error } = await query
+        if (!error && data) products = data
+      }
+
+      // 2) If we still need more (or none found), include products flagged isOnSale
+      if (products.length < limit) {
+        const more = await this.getAllProducts({ onSale: true, limit })
+        // Merge unique by id
+        const seen = new Set(products.map(p => p.id))
+        for (const p of more) {
+          if (!seen.has(p.id)) products.push(p)
+        }
+      }
+
+      // Cap to limit
+      return products.slice(0, limit)
+    } catch (e) {
+      console.error('getOnSaleProducts fallback error:', e)
+      return this.getAllProducts({ onSale: true, limit })
+    }
   },
 
   async getProductsByCategory(categorySlug: string, limit?: number) {
