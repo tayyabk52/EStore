@@ -7,6 +7,8 @@ import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { ArrowRight, Truck, Shield, Crown, Calendar, Sparkles } from "lucide-react"
 import { DynamicCollectionsLayout } from "./DynamicCollectionsLayout"
 import { formatPrice } from "@/lib/currency"
+import { LoadingLink } from "@/components/ui/loading-link"
+import { LoadingButton } from "@/components/ui/loading-button"
 
 // Custom CSS for luxury animations
 const luxuryStyles = `
@@ -116,26 +118,30 @@ export default function HomePageContent({
           </div>
           
           <div className="flex flex-col sm:flex-row gap-4 sm:gap-6 justify-center items-center animate-fade-in-up animation-delay-400">
-            <Button 
-              size="lg" 
-              className="bg-white text-black hover:bg-gray-100 font-semibold tracking-wider px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-2xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 transform hover:scale-105"
-              asChild
+            <LoadingLink 
+              href="/products"
+              loadingMessage="Loading Collection..."
             >
-              <Link href="/products">
+              <Button 
+                size="lg" 
+                className="bg-white text-black hover:bg-gray-100 font-semibold tracking-wider px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-2xl border-2 border-white/20 hover:border-white/40 transition-all duration-300 transform hover:scale-105"
+              >
                 EXPLORE COLLECTION <ArrowRight className="ml-2 h-4 w-4 sm:h-5 sm:w-5" />
-              </Link>
-            </Button>
+              </Button>
+            </LoadingLink>
             
-            <Button 
-              variant="outline" 
-              size="lg" 
-              className="border-white border-2 text-white bg-transparent hover:bg-white hover:text-black font-semibold tracking-wider px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-xl backdrop-blur-sm transition-all duration-300 transform hover:scale-105"
-              asChild
+            <LoadingLink 
+              href="/about"
+              loadingMessage="Loading Heritage..."
             >
-              <Link href="/about">
+              <Button 
+                variant="outline" 
+                size="lg" 
+                className="border-white border-2 text-white bg-transparent hover:bg-white hover:text-black font-semibold tracking-wider px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-xl backdrop-blur-sm transition-all duration-300 transform hover:scale-105"
+              >
                 OUR HERITAGE
-              </Link>
-            </Button>
+              </Button>
+            </LoadingLink>
           </div>
         </div>
         
@@ -211,7 +217,10 @@ export default function HomePageContent({
           </div>
 
           {/* Premium Dynamic Collections System */}
-          <DynamicCollectionsLayout collections={featuredCollections || []} />
+          <DynamicCollectionsLayout 
+            collections={featuredCollections || []} 
+            isLoading={!featuredCollections}
+          />
 
         </div>
       </section>
@@ -233,16 +242,15 @@ export default function HomePageContent({
             <p className="text-neutral-600 text-base sm:text-lg lg:text-xl leading-relaxed max-w-2xl mx-auto mb-8 sm:mb-10">
               Meticulously curated essentials that define contemporary elegance and timeless sophistication
             </p>
-            <Button 
-              variant="outline" 
-              size="lg"
-              className="border-black border-2 text-black hover:bg-black hover:text-white font-semibold tracking-wide px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105" 
-              asChild
-            >
-              <Link href="/products" className="flex items-center">
+            <LoadingLink href="/products" loadingMessage="Loading Collection...">
+              <Button 
+                variant="outline" 
+                size="lg"
+                className="border-black border-2 text-black hover:bg-black hover:text-white font-semibold tracking-wide px-8 sm:px-12 py-3 sm:py-4 text-sm sm:text-base shadow-lg hover:shadow-xl transition-all duration-500 transform hover:scale-105 flex items-center"
+              >
                 EXPLORE COLLECTION <ArrowRight className="ml-3 h-4 w-4 sm:h-5 sm:w-5" />
-              </Link>
-            </Button>
+              </Button>
+            </LoadingLink>
           </div>
 
           {/* Premium Product Grid */}
@@ -307,7 +315,14 @@ export default function HomePageContent({
                   </div>
 
                   {/* Click-through overlay to product page */}
-                  <Link href={`/products/${product.slug}`} aria-label={product.title} className="absolute inset-0 z-10" />
+                  <LoadingLink 
+                    href={`/products/${product.slug}`} 
+                    aria-label={product.title} 
+                    className="absolute inset-0 z-10"
+                    loadingMessage="Loading Product..."
+                  >
+                    <span className="sr-only">{product.title}</span>
+                  </LoadingLink>
                 </div>
                 
                 {/* Sophisticated Product Information */}
@@ -320,11 +335,11 @@ export default function HomePageContent({
                   )}
                   
                   {/* Product Title */}
-                  <Link href={`/products/${product.slug}`} className="block">
+                  <LoadingLink href={`/products/${product.slug}`} loadingMessage={`Loading ${product.title}...`} className="block">
                     <h3 className="text-sm sm:text-base lg:text-lg font-medium text-black group-hover:text-neutral-700 transition-colors leading-tight tracking-wide line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
                       {product.title}
                     </h3>
-                  </Link>
+                  </LoadingLink>
                   
                   {/* Category */}
                   {product.category && (
@@ -377,16 +392,15 @@ export default function HomePageContent({
                       <Crown className="w-5 h-5 text-neutral-400" />
                       <div className="w-12 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
                     </div>
-                    <Button 
-                      variant="outline" 
-                      size="lg" 
-                      className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 font-semibold tracking-wide px-8 py-3 transition-all duration-300" 
-                      asChild
-                    >
-                      <Link href="/products">
+                    <LoadingLink href="/products" loadingMessage="Loading Products...">
+                      <Button 
+                        variant="outline" 
+                        size="lg" 
+                        className="border-neutral-300 text-neutral-700 hover:bg-neutral-100 hover:border-neutral-400 font-semibold tracking-wide px-8 py-3 transition-all duration-300"
+                      >
                         Browse All Products
-                      </Link>
-                    </Button>
+                      </Button>
+                    </LoadingLink>
                   </div>
                 </div>
               </div>
@@ -423,11 +437,11 @@ export default function HomePageContent({
                   <span>Sustainable production practices</span>
                 </div>
               </div>
-              <Button variant="outline" className="border-white border-2 text-white bg-transparent hover:bg-white hover:text-black font-semibold shadow-lg" asChild>
-                <Link href="/about">
+              <LoadingLink href="/about" loadingMessage="Loading Our Story...">
+                <Button variant="outline" className="border-white border-2 text-white bg-transparent hover:bg-white hover:text-black font-semibold shadow-lg">
                   OUR STORY
-                </Link>
-              </Button>
+                </Button>
+              </LoadingLink>
             </div>
             
             <div className="relative h-72 sm:h-96 lg:h-[500px] overflow-hidden">

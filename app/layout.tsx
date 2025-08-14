@@ -4,6 +4,7 @@ import { Navigation } from "@/components/navigation";
 import { Footer } from "@/components/footer";
 import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart-context";
+import { LoadingProvider } from "@/lib/loading-context";
 
 export const metadata: Metadata = {
   title: "La Elegance - Premium Pakistani Heritage Fashion",
@@ -65,14 +66,16 @@ export default function RootLayout({
         <meta name="format-detection" content="telephone=no, date=no, email=no, address=no" />
       </head>
       <body className="font-inter overflow-x-hidden">
-        <CartProvider>
-          <Navigation />
-          <main className="min-h-screen bg-background">
-            {children}
-          </main>
-          <Footer />
-          <Toaster />
-        </CartProvider>
+        <LoadingProvider>
+          <CartProvider>
+            <Navigation />
+            <main className="min-h-screen bg-background">
+              {children}
+            </main>
+            <Footer />
+            <Toaster />
+          </CartProvider>
+        </LoadingProvider>
       </body>
     </html>
   );

@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { wishlistService, type Wishlist } from '@/lib/wishlist'
 import { authService } from '@/lib/auth'
 import { useCart } from '@/lib/cart-context'
+import { LoadingLink } from '@/components/ui/loading-link'
 
 export default function WishlistPageClient() {
   const { refreshCounts } = useCart()
@@ -187,13 +188,13 @@ export default function WishlistPageClient() {
                 {/* Product Image */}
                 <div className="relative aspect-[4/5] overflow-hidden bg-neutral-50">
                   {primaryImage && (
-                    <Link href={`/products/${product.slug}`}>
+                    <LoadingLink href={`/products/${product.slug}`} loadingMessage={`Loading ${product.title}...`}>
                       <img
                         src={primaryImage.url}
                         alt={primaryImage.alt || product.title}
                         className="w-full h-full object-cover group-hover:scale-105 transition-transform duration-500"
                       />
-                    </Link>
+                    </LoadingLink>
                   )}
                   
                   {/* Remove Button */}
@@ -223,11 +224,11 @@ export default function WishlistPageClient() {
                     </div>
                   )}
                   
-                  <Link href={`/products/${product.slug}`}>
+                  <LoadingLink href={`/products/${product.slug}`} loadingMessage={`Loading ${product.title}...`}>
                     <h3 className="font-medium text-black hover:text-neutral-700 transition-colors line-clamp-2">
                       {product.title}
                     </h3>
-                  </Link>
+                  </LoadingLink>
 
                   {product.shortDescription && (
                     <p className="text-sm text-neutral-600 line-clamp-2">

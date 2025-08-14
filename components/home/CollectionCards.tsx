@@ -2,6 +2,7 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { SmartImage } from "@/components/ui/smart-image"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 interface Collection {
   id: string
@@ -37,15 +38,14 @@ export function HeroCard({ collection }: CollectionCardProps) {
         <p className="text-sm sm:text-base mb-4 sm:mb-6 opacity-90 drop-shadow-md line-clamp-2 leading-relaxed">
           {collection.description || 'Discover our premium collection'}
         </p>
-        <Button 
-          variant="outline" 
-          className="bg-white/15 backdrop-blur-sm border-white border-2 text-white hover:bg-white hover:text-black transition-all duration-300 font-semibold shadow-xl text-xs sm:text-sm px-6 py-3"
-          asChild
-        >
-          <Link href={`/collections/${collection.slug}`}>
+        <LoadingLink href={`/collections/${collection.slug}`} loadingMessage={`Loading ${collection.name}...`}>
+          <Button 
+            variant="outline" 
+            className="bg-white/15 backdrop-blur-sm border-white border-2 text-white hover:bg-white hover:text-black transition-all duration-300 font-semibold shadow-xl text-xs sm:text-sm px-6 py-3"
+          >
             DISCOVER COLLECTION
-          </Link>
-        </Button>
+          </Button>
+        </LoadingLink>
       </div>
     </div>
   )
@@ -71,16 +71,15 @@ export function MediumCard({ collection }: CollectionCardProps) {
         <p className="text-sm mb-4 opacity-90 drop-shadow-md line-clamp-1">
           {collection.description || 'Premium collection'}
         </p>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-white/15 backdrop-blur-sm border-white text-white hover:bg-white hover:text-black font-medium text-xs transition-all duration-300"
-          asChild
-        >
-          <Link href={`/collections/${collection.slug}`}>
+        <LoadingLink href={`/collections/${collection.slug}`} loadingMessage={`Loading ${collection.name}...`}>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="bg-white/15 backdrop-blur-sm border-white text-white hover:bg-white hover:text-black font-medium text-xs transition-all duration-300"
+          >
             EXPLORE
-          </Link>
-        </Button>
+          </Button>
+        </LoadingLink>
       </div>
     </div>
   )
@@ -106,16 +105,15 @@ export function GridCard({ collection }: CollectionCardProps) {
         <p className="text-xs opacity-90 drop-shadow-md mb-3 line-clamp-1">
           {collection.description || 'Premium collection'}
         </p>
-        <Button 
-          variant="outline" 
-          size="sm"
-          className="bg-white/15 backdrop-blur-sm border-white text-white hover:bg-white hover:text-black font-medium text-xs transition-all duration-300 px-3 py-1.5"
-          asChild
-        >
-          <Link href={`/collections/${collection.slug}`}>
+        <LoadingLink href={`/collections/${collection.slug}`} loadingMessage={`Loading ${collection.name}...`}>
+          <Button 
+            variant="outline" 
+            size="sm"
+            className="bg-white/15 backdrop-blur-sm border-white text-white hover:bg-white hover:text-black font-medium text-xs transition-all duration-300 px-3 py-1.5"
+          >
             EXPLORE
-          </Link>
-        </Button>
+          </Button>
+        </LoadingLink>
       </div>
     </div>
   )
@@ -145,15 +143,14 @@ export function SpotlightCard({ collection }: CollectionCardProps) {
           <p className="text-sm mb-6 opacity-90 drop-shadow-md leading-relaxed">
             {collection.description || 'Discover our premium featured collection'}
           </p>
-          <Button 
-            variant="outline" 
-            className="bg-white/15 backdrop-blur-sm border-white border-2 text-white hover:bg-white hover:text-black transition-all duration-300 font-semibold shadow-xl"
-            asChild
-          >
-            <Link href={`/collections/${collection.slug}`}>
+          <LoadingLink href={`/collections/${collection.slug}`} loadingMessage={`Loading ${collection.name}...`}>
+            <Button 
+              variant="outline" 
+              className="bg-white/15 backdrop-blur-sm border-white border-2 text-white hover:bg-white hover:text-black transition-all duration-300 font-semibold shadow-xl"
+            >
               DISCOVER COLLECTION
-            </Link>
-          </Button>
+            </Button>
+          </LoadingLink>
         </div>
       </div>
     </div>

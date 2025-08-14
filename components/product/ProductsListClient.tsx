@@ -11,6 +11,7 @@ import { useCart } from '@/lib/cart-context'
 import { formatPrice as formatCurrency } from '@/lib/currency'
 import { SmartImage } from '@/components/ui/smart-image'
 import { FALLBACK_IMAGES } from '@/lib/image-utils'
+import { LoadingLink } from '@/components/ui/loading-link'
 
 type Image = { url: string; alt?: string; isPrimary?: boolean; sortOrder?: number }
 type Variant = { id: string; price: number; compareAtPrice?: number; stock: number; isDefault?: boolean; currency?: string }
@@ -213,7 +214,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                 transition={{ duration: 0.5, delay: index * 0.05, ease: [0.16, 1, 0.3, 1] }}
                 className="group relative bg-white border border-neutral-100/60 hover:border-neutral-200/80 transition-all duration-300 hover:shadow-[0_8px_30px_rgba(0,0,0,0.08)] sm:hover:shadow-[0_15px_45px_rgba(0,0,0,0.08)] rounded-xl sm:rounded-2xl overflow-hidden backdrop-blur-sm flex flex-col"
               >
-                <Link href={`/products/${p.slug}`} className="block relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
+                <LoadingLink href={`/products/${p.slug}`} loadingMessage={`Loading ${p.title}...`} className="block relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                   <div className="aspect-[4/5] bg-gradient-to-br from-neutral-50 to-neutral-100 relative overflow-hidden">
                     {primaryImage ? (
                       <SmartImage 
@@ -308,7 +309,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                       </div>
                     </div>
                   )}
-                </Link>
+                </LoadingLink>
 
                 {/* Dynamic Product Info - Smart Responsive Layout */}
                 <div className="p-3 sm:p-4 lg:p-5 bg-gradient-to-b from-white to-neutral-50/20 flex flex-col">
@@ -321,11 +322,11 @@ export default function ProductsListClient({ products }: { products: ListingProd
                   )}
                   
                   {/* Title - Dynamic but consistent */}
-                  <Link href={`/products/${p.slug}`} className="block group/title mb-2 sm:mb-3">
+                  <LoadingLink href={`/products/${p.slug}`} loadingMessage={`Loading ${p.title}...`} className="block group/title mb-2 sm:mb-3">
                     <h3 className="text-sm sm:text-base lg:text-lg font-light text-neutral-900 group-hover/title:text-black transition-colors duration-300 line-clamp-2 leading-tight sm:leading-snug min-h-[2.5rem] sm:min-h-[3rem] lg:min-h-[3.5rem]">
                       {p.title}
                     </h3>
-                  </Link>
+                  </LoadingLink>
                   
                   {/* Category */}
                   {p.category && (
@@ -451,7 +452,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                   className="group bg-white border border-neutral-100/60 hover:border-neutral-200/80 rounded-xl sm:rounded-2xl overflow-hidden shadow-md hover:shadow-[0_12px_40px_rgba(0,0,0,0.08)] transition-all duration-300 backdrop-blur-sm"
                 >
                   <div className="flex items-stretch gap-3 sm:gap-4 lg:gap-6 xl:gap-8 p-3 sm:p-4 lg:p-6 xl:p-8">
-                    <Link href={`/products/${p.slug}`} className="block shrink-0 group/image">
+                    <LoadingLink href={`/products/${p.slug}`} loadingMessage={`Loading ${p.title}...`} className="block shrink-0 group/image">
                       <div className="relative w-20 sm:w-28 lg:w-36 xl:w-44 aspect-[4/5] bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg sm:rounded-xl overflow-hidden shadow-md group-hover/image:shadow-xl transition-shadow duration-300">
                         {primaryImage ? (
                           <SmartImage 
@@ -498,7 +499,7 @@ export default function ProductsListClient({ products }: { products: ListingProd
                           </div>
                         )}
                       </div>
-                    </Link>
+                    </LoadingLink>
                     
                     <div className="flex-1 min-w-0 flex flex-col justify-between gap-2 sm:gap-3 lg:gap-4">
                       <div className="space-y-2 sm:space-y-3">
@@ -509,11 +510,11 @@ export default function ProductsListClient({ products }: { products: ListingProd
                         )}
                         
                         <div className="flex items-start justify-between gap-2 sm:gap-4">
-                          <Link href={`/products/${p.slug}`} className="block group/title flex-1 min-w-0">
+                          <LoadingLink href={`/products/${p.slug}`} loadingMessage={`Loading ${p.title}...`} className="block group/title flex-1 min-w-0">
                             <h3 className="text-sm sm:text-base lg:text-lg xl:text-xl font-light text-neutral-900 group-hover/title:text-black transition-colors duration-300 line-clamp-2 leading-tight sm:leading-snug lg:leading-relaxed">
                               {p.title}
                             </h3>
-                          </Link>
+                          </LoadingLink>
                           
                           {/* Premium badges - hide on mobile if too cramped */}
                           <div className="hidden sm:flex flex-col gap-1 lg:gap-2 shrink-0">

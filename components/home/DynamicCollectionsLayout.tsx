@@ -2,6 +2,8 @@ import Link from "next/link"
 import { Button } from "@/components/ui/button"
 import { ArrowRight, Crown } from "lucide-react"
 import { HeroCard, MediumCard, GridCard, SpotlightCard } from "./CollectionCards"
+import { LoadingLink } from "@/components/ui/loading-link"
+import { CollectionsLoadingSkeleton } from "./CollectionsLoadingSkeleton"
 
 interface Collection {
   id: string
@@ -14,10 +16,16 @@ interface Collection {
 
 interface DynamicCollectionsLayoutProps {
   collections: Collection[]
+  isLoading?: boolean
 }
 
-export function DynamicCollectionsLayout({ collections }: DynamicCollectionsLayoutProps) {
+export function DynamicCollectionsLayout({ collections, isLoading = false }: DynamicCollectionsLayoutProps) {
   const count = collections.length
+
+  // Show loading skeleton when loading
+  if (isLoading) {
+    return <CollectionsLoadingSkeleton />
+  }
 
   if (count === 0) {
     return (
@@ -30,9 +38,11 @@ export function DynamicCollectionsLayout({ collections }: DynamicCollectionsLayo
           <p className="text-gray-600 mb-8 leading-relaxed">
             Our curated collections are being carefully crafted to bring you the finest selection of premium products.
           </p>
-          <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100" asChild>
-            <Link href="/products">Browse All Products</Link>
-          </Button>
+          <LoadingLink href="/products" loadingMessage="Loading Products...">
+            <Button variant="outline" className="border-gray-300 text-gray-700 hover:bg-gray-100">
+              Browse All Products
+            </Button>
+          </LoadingLink>
         </div>
       </div>
     )
@@ -198,15 +208,14 @@ export function DynamicCollectionsLayout({ collections }: DynamicCollectionsLayo
           </span>
           <div className="w-12 h-px bg-gradient-to-r from-transparent via-neutral-300 to-transparent"></div>
         </div>
-        <Button 
-          variant="outline" 
-          className="border-black border-2 text-black hover:bg-black hover:text-white font-bold tracking-wide shadow-md hover:shadow-lg transition-all duration-300" 
-          asChild
-        >
-          <Link href="/collections" className="flex items-center">
+        <LoadingLink href="/collections" loadingMessage="Loading Collections..." className="flex items-center">
+          <Button 
+            variant="outline" 
+            className="border-black border-2 text-black hover:bg-black hover:text-white font-bold tracking-wide shadow-md hover:shadow-lg transition-all duration-300"
+          >
             View All Collections <ArrowRight className="ml-2 h-4 w-4" />
-          </Link>
-        </Button>
+          </Button>
+        </LoadingLink>
       </div>
     </div>
   )

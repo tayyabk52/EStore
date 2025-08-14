@@ -19,6 +19,7 @@ import { authService } from "@/lib/auth"
 import { useCart } from "@/lib/cart-context"
 import { LoginModal } from "@/components/auth/LoginModal"
 import { RegisterModal } from "@/components/auth/RegisterModal"
+import { LoadingLink } from "@/components/ui/loading-link"
 
 export function Navigation() {
   const { cartCount, wishlistCount } = useCart()
@@ -439,9 +440,11 @@ export function Navigation() {
           <div className="flex items-center justify-between h-16 md:h-20">
             
             {/* Logo */}
-            <Link href="/" className="text-2xl md:text-3xl font-light tracking-[0.15em] md:tracking-[0.3em] text-black hover:text-gray-600 transition-all duration-300">
-              La Elegance
-            </Link>
+            <LoadingLink href="/" loadingMessage="Loading Home...">
+              <span className="text-2xl md:text-3xl font-light tracking-[0.15em] md:tracking-[0.3em] text-black hover:text-gray-600 transition-all duration-300">
+                La Elegance
+              </span>
+            </LoadingLink>
 
             {/* Main Navigation Links */}
             <div className="hidden lg:flex items-center space-x-16">
@@ -571,15 +574,15 @@ export function Navigation() {
               })}
 
               {/* Simple Navigation Links */}
-              <Link href="/kids" className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
+              <LoadingLink href="/kids" loadingMessage="Loading Kids Collection..." className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
                 KIDS
-              </Link>
-              <Link href="/about" className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
+              </LoadingLink>
+              <LoadingLink href="/about" loadingMessage="Loading About..." className="text-sm font-medium tracking-wider text-black hover:text-gray-600 transition-colors">
                 ABOUT
-              </Link>
-              <Link href="/sale" className="text-sm font-medium tracking-wider text-red-600 hover:text-red-700 transition-colors">
+              </LoadingLink>
+              <LoadingLink href="/sale" loadingMessage="Loading Sale Items..." className="text-sm font-medium tracking-wider text-red-600 hover:text-red-700 transition-colors">
                 SALE
-              </Link>
+              </LoadingLink>
             </div>
 
             {/* Simplified Backdrop Overlay */}
@@ -716,29 +719,29 @@ export function Navigation() {
 
               {/* Wishlist */}
               <div className="hidden md:block">
-                <Button variant="ghost" size="icon" asChild className="hover:bg-gray-100 relative">
-                  <Link href="/wishlist">
+                <LoadingLink href="/wishlist" loadingMessage="Loading Wishlist...">
+                  <Button variant="ghost" size="icon" className="hover:bg-gray-100 relative">
                     <Heart className="h-5 w-5" />
                     {wishlistCount > 0 && (
                     <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                         {wishlistCount}
                     </span>
                     )}
-                  </Link>
-                </Button>
+                  </Button>
+                </LoadingLink>
               </div>
 
               {/* Shopping Cart */}
-              <Button variant="ghost" size="icon" asChild className="hover:bg-gray-100 relative">
-                <Link href="/cart">
+              <LoadingLink href="/cart" loadingMessage="Loading Cart...">
+                <Button variant="ghost" size="icon" className="hover:bg-gray-100 relative">
                   <ShoppingBag className="h-5 w-5" />
                   {cartCount > 0 && (
                   <span className="absolute -top-1 -right-1 bg-black text-white text-xs rounded-full h-4 w-4 flex items-center justify-center">
                       {cartCount}
                   </span>
                   )}
-                </Link>
-              </Button>
+                </Button>
+              </LoadingLink>
 
               {/* Mobile Menu */}
               <Button 
