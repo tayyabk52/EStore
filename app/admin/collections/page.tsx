@@ -20,6 +20,7 @@ import { Input } from "@/components/ui/input"
 import { Textarea } from "@/components/ui/textarea"
 import { Switch } from "@/components/ui/switch"
 import { Label } from "@/components/ui/label"
+import { AdminLayout } from "@/components/admin/admin-layout"
 import { toast } from "sonner"
 import Link from "next/link"
 import { isValidImageUrl, getImageSourceType } from "@/lib/image-utils"
@@ -221,46 +222,35 @@ export default function CollectionsAdmin() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Crown className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">Invalid or missing admin key</p>
+      <AdminLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Crown className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+            <p className="text-gray-600">Invalid or missing admin key</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Link href={`/admin?key=${ADMIN_SECRET_KEY}`}>
-                <Button variant="ghost" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div className="flex items-center space-x-2">
-                <Crown className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Collections Management</h1>
-              </div>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button onClick={() => setShowForm(true)} disabled={loading}>
-                <Plus className="w-4 h-4 mr-2" />
-                Add Collection
-              </Button>
-            </div>
+    <AdminLayout title="Collections Management" subtitle="Manage featured collections and promotional sections">
+      {/* Header Actions */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center space-x-3">
+          <Star className="w-6 h-6 text-yellow-600" />
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Collections ({collections.length})</h2>
+            <p className="text-sm text-gray-600">Featured promotional sections</p>
           </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <Button onClick={() => setShowForm(true)} disabled={loading} className="bg-yellow-600 hover:bg-yellow-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Collection
+        </Button>
+      </div>
         {/* Instructions */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
@@ -558,7 +548,6 @@ export default function CollectionsAdmin() {
             )}
           </div>
         </motion.div>
-      </div>
-    </div>
+    </AdminLayout>
   )
 }

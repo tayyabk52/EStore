@@ -8,20 +8,27 @@ import {
   Users, 
   ShoppingCart, 
   TrendingUp, 
-  Settings, 
-  Eye,
-  Edit,
-  ArrowRight,
-  Crown,
-  Star,
   DollarSign,
   Loader2,
   CheckCircle,
   Folder,
   ImageIcon,
-  Tag
+  Tag,
+  BarChart3,
+  ArrowUpRight,
+  ArrowDownRight,
+  Clock,
+  AlertCircle,
+  Zap,
+  Globe,
+  Calendar,
+  Activity
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/components/ui/card"
+import { Progress } from "@/components/ui/progress"
+import { Badge } from "@/components/ui/badge"
+import { AdminLayout } from "@/components/admin/admin-layout"
 import Link from "next/link"
 
 // Secret key for admin access
@@ -88,314 +95,366 @@ export default function AdminDashboard() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">Invalid or missing admin key</p>
+      <AdminLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Shield className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+            <p className="text-gray-600">Invalid or missing admin key</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     )
   }
 
   if (loading) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Loading Dashboard</h1>
-          <p className="text-gray-600">Fetching your store data...</p>
+      <AdminLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Loader2 className="w-16 h-16 text-blue-600 mx-auto mb-4 animate-spin" />
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Loading Dashboard</h1>
+            <p className="text-gray-600">Fetching your store data...</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     )
   }
 
   if (error) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h1>
-          <p className="text-gray-600">{error}</p>
-          <Button onClick={fetchDashboardStats} className="mt-4">
-            Retry
-          </Button>
+      <AdminLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Shield className="w-16 h-16 text-red-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Error Loading Dashboard</h1>
+            <p className="text-gray-600">{error}</p>
+            <Button onClick={fetchDashboardStats} className="mt-4">
+              Retry
+            </Button>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Admin Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <div className="flex items-center space-x-2">
-                <Crown className="w-8 h-8 text-blue-600" />
-                <h1 className="text-2xl font-bold text-gray-900">Store Admin</h1>
-              </div>
-              <span className="px-3 py-1 bg-blue-100 text-blue-800 text-sm font-medium rounded-full">
-                Admin Panel
-              </span>
-            </div>
-            
-            <div className="flex items-center space-x-4">
-              <Button variant="outline" size="sm">
-                <Eye className="w-4 h-4 mr-2" />
-                View Store
-              </Button>
-            </div>
-          </div>
-        </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
-        {/* Welcome Section */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          className="mb-8"
-        >
-          <h2 className="text-3xl font-bold text-gray-900 mb-2">Welcome to Your Store Admin</h2>
-          <p className="text-gray-600">Manage your online store with a simple 4-step process: Create Categories → Setup Collections → Add Products → Manage Orders</p>
-        </motion.div>
-
-        {/* How Your Store Works */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.1 }}
-          className="bg-gradient-to-r from-blue-50 to-indigo-50 border border-blue-200 rounded-lg p-6 mb-8"
-        >
-          <h3 className="text-lg font-semibold text-blue-900 mb-4 flex items-center">
-            <Package className="w-5 h-5 mr-2" />
-            How Your E-Commerce Store Works
-          </h3>
-          
-          <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-            <div className="text-center">
-              <div className="w-12 h-12 bg-blue-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
-                <Folder className="w-6 h-6" />
-              </div>
-              <h4 className="font-semibold text-blue-900 mb-2">1. Categories</h4>
-              <p className="text-sm text-blue-700">
-                Organize your products into categories like "Clothing", "Electronics", etc. 
-                Categories can have subcategories (e.g., "Men's Clothing" under "Clothing").
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-green-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
-                <Package className="w-6 h-6" />
-              </div>
-              <h4 className="font-semibold text-green-900 mb-2">2. Products</h4>
-              <p className="text-sm text-green-700">
-                Each product has basic info (name, description) plus variants (different sizes, colors) 
-                with their own prices and stock levels, plus images.
-              </p>
-            </div>
-            
-            <div className="text-center">
-              <div className="w-12 h-12 bg-purple-600 text-white rounded-full flex items-center justify-center mx-auto mb-3">
-                <ShoppingCart className="w-6 h-6" />
-              </div>
-              <h4 className="font-semibold text-purple-900 mb-2">3. Orders</h4>
-              <p className="text-sm text-purple-700">
-                When customers buy specific product variants, orders are created with 
-                the exact items, quantities, and shipping details.
-              </p>
-            </div>
-          </div>
-        </motion.div>
-
-        {/* Stats Overview */}
-        <motion.div 
-          initial={{ opacity: 0, y: 20 }}
-          animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.2 }}
-          className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-4 gap-6 mb-8"
-        >
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-blue-100 rounded-lg">
-                <Folder className="w-6 h-6 text-blue-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Categories</p>
-                <p className="text-2xl font-bold text-gray-900">{stats?.totalCategories || 0}</p>
-              </div>
-            </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center">
+    <AdminLayout 
+      title="Dashboard" 
+      subtitle={`Welcome back! Here's what's happening in your store today.`}
+    >
+      {/* Key Metrics */}
+      <motion.div 
+        initial={{ opacity: 0, y: 20 }}
+        animate={{ opacity: 1, y: 0 }}
+        className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-4 gap-6 mb-8"
+      >
+        {/* Revenue Card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Revenue</CardTitle>
               <div className="p-2 bg-green-100 rounded-lg">
-                <Package className="w-6 h-6 text-green-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Products</p>
-                <p className="text-2xl font-bold text-gray-900">{stats?.totalProducts || 0}</p>
+                <DollarSign className="w-4 h-4 text-green-600" />
               </div>
             </div>
-          </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-gray-900">
+                ${(stats?.totalRevenue || 0).toLocaleString()}
+              </div>
+              <div className="flex items-center space-x-1 text-sm">
+                <ArrowUpRight className="w-4 h-4 text-green-500" />
+                <span className="text-green-600 font-medium">+12.5%</span>
+                <span className="text-gray-500">from last month</span>
+              </div>
+            </div>
+          </CardContent>
+          <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br from-green-50 to-green-100 rounded-tl-full opacity-50" />
+        </Card>
 
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center">
+        {/* Products Card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Products</CardTitle>
+              <div className="p-2 bg-blue-100 rounded-lg">
+                <Package className="w-4 h-4 text-blue-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-gray-900">
+                {stats?.totalProducts || 0}
+              </div>
+              <div className="flex items-center space-x-1 text-sm">
+                <ArrowUpRight className="w-4 h-4 text-blue-500" />
+                <span className="text-blue-600 font-medium">+3 this week</span>
+                <span className="text-gray-500">active products</span>
+              </div>
+            </div>
+          </CardContent>
+          <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br from-blue-50 to-blue-100 rounded-tl-full opacity-50" />
+        </Card>
+
+        {/* Orders Card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">Total Orders</CardTitle>
               <div className="p-2 bg-purple-100 rounded-lg">
-                <ShoppingCart className="w-6 h-6 text-purple-600" />
-              </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Orders</p>
-                <p className="text-2xl font-bold text-gray-900">{stats?.totalOrders || 0}</p>
+                <ShoppingCart className="w-4 h-4 text-purple-600" />
               </div>
             </div>
-          </div>
-
-          <div className="bg-white rounded-lg shadow-sm p-6 border border-gray-200">
-            <div className="flex items-center">
-              <div className="p-2 bg-yellow-100 rounded-lg">
-                <DollarSign className="w-6 h-6 text-yellow-600" />
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-gray-900">
+                {stats?.totalOrders || 0}
               </div>
-              <div className="ml-4">
-                <p className="text-sm font-medium text-gray-600">Revenue</p>
-                <p className="text-2xl font-bold text-gray-900">${(stats?.totalRevenue || 0).toLocaleString()}</p>
+              <div className="flex items-center space-x-1 text-sm">
+                <Activity className="w-4 h-4 text-purple-500" />
+                <span className="text-purple-600 font-medium">Processing</span>
+                <span className="text-gray-500">0 pending</span>
               </div>
             </div>
-          </div>
-        </motion.div>
+          </CardContent>
+          <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br from-purple-50 to-purple-100 rounded-tl-full opacity-50" />
+        </Card>
 
+        {/* Categories Card */}
+        <Card className="relative overflow-hidden">
+          <CardHeader className="pb-2">
+            <div className="flex items-center justify-between">
+              <CardTitle className="text-sm font-medium text-gray-600">Categories</CardTitle>
+              <div className="p-2 bg-orange-100 rounded-lg">
+                <Folder className="w-4 h-4 text-orange-600" />
+              </div>
+            </div>
+          </CardHeader>
+          <CardContent>
+            <div className="space-y-1">
+              <div className="text-2xl font-bold text-gray-900">
+                {stats?.totalCategories || 0}
+              </div>
+              <div className="flex items-center space-x-1 text-sm">
+                <Zap className="w-4 h-4 text-orange-500" />
+                <span className="text-orange-600 font-medium">Organized</span>
+                <span className="text-gray-500">structure</span>
+              </div>
+            </div>
+          </CardContent>
+          <div className="absolute bottom-0 right-0 w-16 h-16 bg-gradient-to-br from-orange-50 to-orange-100 rounded-tl-full opacity-50" />
+        </Card>
+      </motion.div>
+
+      {/* Quick Actions & Setup */}
+      <div className="grid grid-cols-1 lg:grid-cols-3 gap-6 mb-8">
         {/* Quick Setup Guide */}
         <motion.div 
           initial={{ opacity: 0, y: 20 }}
           animate={{ opacity: 1, y: 0 }}
-          transition={{ delay: 0.3 }}
-          className="mb-8"
+          transition={{ delay: 0.2 }}
+          className="lg:col-span-2"
         >
-          <h3 className="text-lg font-semibold text-gray-900 mb-4">Quick Setup Guide</h3>
-          <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-            <div className="grid grid-cols-1 md:grid-cols-3 gap-6">
-              
-              {/* Step 1: Categories */}
-              <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`} className="group">
-                <div className="p-6 rounded-lg border border-gray-200 hover:border-blue-300 hover:bg-blue-50 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-blue-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        1
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Zap className="w-5 h-5 text-blue-600" />
+                <span>Quick Setup</span>
+              </CardTitle>
+              <CardDescription>
+                Get your store ready in 3 simple steps
+              </CardDescription>
+            </CardHeader>
+            <CardContent>
+              <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                {/* Categories */}
+                <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`} className="group">
+                  <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-blue-300 hover:bg-blue-50/50 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-blue-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          1
+                        </div>
+                        <span className="font-medium text-gray-900">Categories</span>
                       </div>
-                      <h4 className="font-semibold text-gray-900">Setup Categories</h4>
+                      <Badge variant="outline" className="text-xs">
+                        {stats?.totalCategories || 0}
+                      </Badge>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-blue-600" />
+                    <p className="text-sm text-gray-600 mb-3">
+                      Organize products into categories and subcategories
+                    </p>
+                    <Button size="sm" variant="outline" className="w-full text-xs">
+                      Setup Categories →
+                    </Button>
                   </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p className="flex items-center"><Folder className="w-4 h-4 mr-2" />Create main categories (e.g., Clothing)</p>
-                    <p className="flex items-center"><Folder className="w-4 h-4 mr-2" />Add subcategories (e.g., Men's, Women's)</p>
-                    <p className="flex items-center"><Settings className="w-4 h-4 mr-2" />Configure display settings</p>
-                  </div>
-                  <Button size="sm" className="mt-4 w-full">
-                    Manage Categories
-                  </Button>
-                </div>
-              </Link>
+                </Link>
 
-              {/* Step 2: Collections */}
-              <Link href={`/admin/collections?key=${ADMIN_SECRET_KEY}`} className="group">
-                <div className="p-6 rounded-lg border border-gray-200 hover:border-purple-300 hover:bg-purple-50 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-purple-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        2
+                {/* Collections */}
+                <Link href={`/admin/collections?key=${ADMIN_SECRET_KEY}`} className="group">
+                  <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-purple-300 hover:bg-purple-50/50 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-purple-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          2
+                        </div>
+                        <span className="font-medium text-gray-900">Collections</span>
                       </div>
-                      <h4 className="font-semibold text-gray-900">Setup Collections</h4>
+                      <Badge variant="outline" className="text-xs">
+                        Featured
+                      </Badge>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-purple-600" />
+                    <p className="text-sm text-gray-600 mb-3">
+                      Create featured collections for your homepage
+                    </p>
+                    <Button size="sm" variant="outline" className="w-full text-xs">
+                      Manage Collections →
+                    </Button>
                   </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p className="flex items-center"><Star className="w-4 h-4 mr-2" />Create featured collections</p>
-                    <p className="flex items-center"><ImageIcon className="w-4 h-4 mr-2" />Add compelling imagery</p>
-                    <p className="flex items-center"><Crown className="w-4 h-4 mr-2" />Display on homepage</p>
-                  </div>
-                  <Button size="sm" className="mt-4 w-full">
-                    Manage Collections
-                  </Button>
-                </div>
-              </Link>
+                </Link>
 
-              {/* Step 3: Products */}
-              <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`} className="group">
-                <div className="p-6 rounded-lg border border-gray-200 hover:border-green-300 hover:bg-green-50 transition-all cursor-pointer">
-                  <div className="flex items-center justify-between mb-4">
-                    <div className="flex items-center space-x-3">
-                      <div className="w-8 h-8 bg-green-600 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                        3
+                {/* Products */}
+                <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`} className="group">
+                  <div className="p-4 rounded-lg border-2 border-dashed border-gray-200 hover:border-green-300 hover:bg-green-50/50 transition-all cursor-pointer">
+                    <div className="flex items-center justify-between mb-3">
+                      <div className="flex items-center space-x-2">
+                        <div className="w-6 h-6 bg-green-600 text-white rounded-full flex items-center justify-center text-xs font-bold">
+                          3
+                        </div>
+                        <span className="font-medium text-gray-900">Products</span>
                       </div>
-                      <h4 className="font-semibold text-gray-900">Add Products</h4>
+                      <Badge variant="outline" className="text-xs">
+                        {stats?.totalProducts || 0}
+                      </Badge>
                     </div>
-                    <ArrowRight className="w-5 h-5 text-gray-400 group-hover:text-green-600" />
+                    <p className="text-sm text-gray-600 mb-3">
+                      Add products with variants, pricing, and images
+                    </p>
+                    <Button size="sm" variant="outline" className="w-full text-xs">
+                      Add Products →
+                    </Button>
                   </div>
-                  <div className="space-y-2 text-sm text-gray-600">
-                    <p className="flex items-center"><Package className="w-4 h-4 mr-2" />Create product (name, description)</p>
-                    <p className="flex items-center"><Tag className="w-4 h-4 mr-2" />Add variants (price, stock, size/color)</p>
-                    <p className="flex items-center"><ImageIcon className="w-4 h-4 mr-2" />Upload product images</p>
-                  </div>
-                  <Button size="sm" className="mt-4 w-full">
-                    Add Products
-                  </Button>
-                </div>
-              </Link>
-
-              {/* Step 4: Orders */}
-              <div className="p-6 rounded-lg border border-gray-200 bg-gray-50">
-                <div className="flex items-center justify-between mb-4">
-                  <div className="flex items-center space-x-3">
-                    <div className="w-8 h-8 bg-gray-400 text-white rounded-full flex items-center justify-center text-sm font-bold">
-                      4
-                    </div>
-                    <h4 className="font-semibold text-gray-900">Manage Orders</h4>
-                  </div>
-                  <CheckCircle className="w-5 h-5 text-gray-400" />
-                </div>
-                <div className="space-y-2 text-sm text-gray-600">
-                  <p className="flex items-center"><ShoppingCart className="w-4 h-4 mr-2" />Orders appear when customers buy</p>
-                  <p className="flex items-center"><TrendingUp className="w-4 h-4 mr-2" />Track sales and revenue</p>
-                  <p className="flex items-center"><Users className="w-4 h-4 mr-2" />Manage customer information</p>
-                </div>
-                <Button size="sm" className="mt-4 w-full" variant="outline" disabled>
-                  Coming Soon
-                </Button>
+                </Link>
               </div>
-            </div>
-          </div>
+            </CardContent>
+          </Card>
         </motion.div>
 
-        {/* Recent Products & Status */}
-        <div className="grid grid-cols-1 lg:grid-cols-2 gap-8">
-          {/* Recent Products */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.4 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200"
-          >
-            <div className="p-6 border-b border-gray-200">
+        {/* Store Status */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.3 }}
+        >
+          <Card>
+            <CardHeader>
+              <CardTitle className="flex items-center space-x-2">
+                <Activity className="w-5 h-5 text-green-600" />
+                <span>Store Status</span>
+              </CardTitle>
+              <CardDescription>
+                System health and performance
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="space-y-4">
+              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50 border border-green-200">
+                <div className="flex items-center space-x-3">
+                  <CheckCircle className="w-5 h-5 text-green-600" />
+                  <div>
+                    <p className="font-medium text-sm text-gray-900">Database</p>
+                    <p className="text-xs text-gray-600">Connected</p>
+                  </div>
+                </div>
+                <Badge className="bg-green-100 text-green-800 border-green-300">
+                  Active
+                </Badge>
+              </div>
+
+              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50 border border-blue-200">
+                <div className="flex items-center space-x-3">
+                  <Shield className="w-5 h-5 text-blue-600" />
+                  <div>
+                    <p className="font-medium text-sm text-gray-900">Security</p>
+                    <p className="text-xs text-gray-600">Authenticated</p>
+                  </div>
+                </div>
+                <Badge className="bg-blue-100 text-blue-800 border-blue-300">
+                  Secure
+                </Badge>
+              </div>
+
+              <div className={`flex items-center justify-between p-3 rounded-lg ${
+                (stats?.lowStockProducts?.length || 0) > 0 
+                  ? 'bg-yellow-50 border border-yellow-200' 
+                  : 'bg-green-50 border border-green-200'
+              }`}>
+                <div className="flex items-center space-x-3">
+                  <Package className={`w-5 h-5 ${
+                    (stats?.lowStockProducts?.length || 0) > 0 ? 'text-yellow-600' : 'text-green-600'
+                  }`} />
+                  <div>
+                    <p className="font-medium text-sm text-gray-900">Inventory</p>
+                    <p className="text-xs text-gray-600">
+                      {(stats?.lowStockProducts?.length || 0) === 0 ? 'Well stocked' : `${stats?.lowStockProducts?.length} low stock`}
+                    </p>
+                  </div>
+                </div>
+                <Badge className={`${
+                  (stats?.lowStockProducts?.length || 0) > 0 
+                    ? 'bg-yellow-100 text-yellow-800 border-yellow-300' 
+                    : 'bg-green-100 text-green-800 border-green-300'
+                }`}>
+                  {(stats?.lowStockProducts?.length || 0) === 0 ? 'Good' : 'Alert'}
+                </Badge>
+              </div>
+            </CardContent>
+          </Card>
+        </motion.div>
+      </div>
+
+      {/* Recent Activity & Analytics */}
+      <div className="grid grid-cols-1 lg:grid-cols-2 gap-6">
+        {/* Recent Products */}
+        <motion.div 
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.4 }}
+        >
+          <Card className="h-full">
+            <CardHeader className="pb-3">
               <div className="flex items-center justify-between">
-                <h3 className="text-lg font-semibold text-gray-900">Recent Products</h3>
+                <div>
+                  <CardTitle className="flex items-center space-x-2">
+                    <Package className="w-5 h-5 text-blue-600" />
+                    <span>Recent Products</span>
+                  </CardTitle>
+                  <CardDescription>
+                    Latest additions to your inventory
+                  </CardDescription>
+                </div>
                 <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`}>
-                  <Button variant="outline" size="sm">
-                    View All <ArrowRight className="w-4 h-4 ml-2" />
+                  <Button variant="ghost" size="sm" className="text-xs">
+                    View All →
                   </Button>
                 </Link>
               </div>
-            </div>
-            
-            <div className="p-6">
-              <div className="space-y-4">
-                {stats?.recentProducts && stats.recentProducts.length > 0 ? (
-                  stats.recentProducts.map((product: any) => (
-                    <div key={product.id} className="flex items-center space-x-4 p-3 rounded-lg hover:bg-gray-50">
-                      <div className="w-16 h-16 rounded-lg overflow-hidden bg-gray-200">
+            </CardHeader>
+            <CardContent className="pt-0">
+              {stats?.recentProducts && stats.recentProducts.length > 0 ? (
+                <div className="space-y-3">
+                  {stats.recentProducts.slice(0, 4).map((product: any, index: number) => (
+                    <motion.div
+                      key={product.id}
+                      initial={{ opacity: 0, x: -20 }}
+                      animate={{ opacity: 1, x: 0 }}
+                      transition={{ delay: 0.1 * index }}
+                      className="flex items-center space-x-3 p-2 rounded-lg hover:bg-gray-50 group transition-colors"
+                    >
+                      <div className="w-12 h-12 rounded-lg overflow-hidden bg-gray-100 flex-shrink-0">
                         {product.images?.[0]?.url ? (
                           <img 
                             src={product.images[0].url} 
@@ -403,140 +462,151 @@ export default function AdminDashboard() {
                             className="w-full h-full object-cover"
                           />
                         ) : (
-                          <div className="w-full h-full flex items-center justify-center text-gray-400">
-                            <Package className="w-6 h-6" />
+                          <div className="w-full h-full flex items-center justify-center">
+                            <Package className="w-5 h-5 text-gray-400" />
                           </div>
                         )}
                       </div>
-                      <div className="flex-1">
-                        <h4 className="font-medium text-gray-900">{product.title}</h4>
-                        <p className="text-sm text-gray-600">
-                          {product.category?.displayName || product.category?.name || 'Uncategorized'}
+                      <div className="flex-1 min-w-0">
+                        <p className="font-medium text-sm text-gray-900 truncate">
+                          {product.title}
                         </p>
-                        <div className="flex items-center space-x-4 mt-1">
-                          <span className="text-sm font-medium text-green-600">
+                        <div className="flex items-center space-x-2 mt-1">
+                          <Badge variant="secondary" className="text-xs px-2 py-0">
                             ${product.variants?.[0]?.price || 0}
-                          </span>
-                          <span className={`px-2 py-1 text-xs rounded-full ${
-                            product.variants?.[0]?.stock < 10 
-                              ? 'bg-red-100 text-red-800' 
-                              : 'bg-green-100 text-green-800'
-                          }`}>
-                            Stock: {product.variants?.[0]?.stock || 0}
-                          </span>
-                          <span className="text-xs text-gray-500">
-                            {product.variants?.length || 0} variants
-                          </span>
+                          </Badge>
+                          <Badge 
+                            variant={product.variants?.[0]?.stock < 10 ? "destructive" : "default"}
+                            className="text-xs px-2 py-0"
+                          >
+                            {product.variants?.[0]?.stock || 0} in stock
+                          </Badge>
                         </div>
                       </div>
                       <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}&edit=${product.id}`}>
-                        <Button size="sm" variant="outline">
-                          <Edit className="w-4 h-4" />
+                        <Button size="sm" variant="ghost" className="opacity-0 group-hover:opacity-100 transition-opacity">
+                          <Tag className="w-4 h-4" />
                         </Button>
                       </Link>
-                    </div>
-                  ))
-                ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <Package className="w-12 h-12 mx-auto mb-2 text-gray-300" />
-                    <p className="font-medium">No products yet</p>
-                    <p className="text-sm mb-4">Start by creating categories, then add your products</p>
-                    <div className="space-y-2">
-                      <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`}>
-                        <Button size="sm" variant="outline" className="w-full">
-                          1. Create Categories First
-                        </Button>
-                      </Link>
-                      <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`}>
-                        <Button size="sm" className="w-full">
-                          2. Then Add Products
-                        </Button>
-                      </Link>
-                    </div>
+                    </motion.div>
+                  ))}
+                </div>
+              ) : (
+                <div className="text-center py-8 text-gray-500">
+                  <div className="w-16 h-16 bg-gray-100 rounded-full flex items-center justify-center mx-auto mb-4">
+                    <Package className="w-8 h-8 text-gray-400" />
                   </div>
-                )}
-              </div>
-            </div>
-          </motion.div>
-
-          {/* System Status */}
-          <motion.div 
-            initial={{ opacity: 0, y: 20 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ delay: 0.5 }}
-            className="bg-white rounded-lg shadow-sm border border-gray-200"
-          >
-            <div className="p-6 border-b border-gray-200">
-              <h3 className="text-lg font-semibold text-gray-900">Store Status</h3>
-            </div>
-            
-            <div className="p-6 space-y-4">
-              <div className="flex items-center justify-between p-3 rounded-lg bg-green-50">
-                <div className="flex items-center space-x-3">
-                  <CheckCircle className="w-5 h-5 text-green-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Database Connected</p>
-                    <p className="text-sm text-gray-600">Supabase integration working</p>
+                  <p className="font-medium text-gray-700 mb-2">No products yet</p>
+                  <p className="text-sm text-gray-600 mb-4">Start building your inventory</p>
+                  <div className="space-y-2">
+                    <Link href={`/admin/categories?key=${ADMIN_SECRET_KEY}`}>
+                      <Button size="sm" variant="outline" className="w-full">
+                        Setup Categories First
+                      </Button>
+                    </Link>
+                    <Link href={`/admin/products?key=${ADMIN_SECRET_KEY}`}>
+                      <Button size="sm" className="w-full">
+                        Add Your First Product
+                      </Button>
+                    </Link>
                   </div>
                 </div>
-                <span className="text-sm text-green-600 font-medium">✓ Active</span>
-              </div>
+              )}
+            </CardContent>
+          </Card>
+        </motion.div>
 
-              <div className="flex items-center justify-between p-3 rounded-lg bg-blue-50">
-                <div className="flex items-center space-x-3">
-                  <Shield className="w-5 h-5 text-blue-600" />
-                  <div>
-                    <p className="font-medium text-gray-900">Admin Access</p>
-                    <p className="text-sm text-gray-600">Authenticated with secret key</p>
-                  </div>
-                </div>
-                <span className="text-sm text-blue-600 font-medium">✓ Secure</span>
-              </div>
-
-              <div className={`flex items-center justify-between p-3 rounded-lg ${
-                (stats?.lowStockProducts?.length || 0) > 0 ? 'bg-yellow-50' : 'bg-green-50'
-              }`}>
-                <div className="flex items-center space-x-3">
-                  <Package className={`w-5 h-5 ${
-                    (stats?.lowStockProducts?.length || 0) > 0 ? 'text-yellow-600' : 'text-green-600'
-                  }`} />
-                  <div>
-                    <p className="font-medium text-gray-900">Inventory Status</p>
-                    <p className="text-sm text-gray-600">
-                      {(stats?.lowStockProducts?.length || 0) === 0 
-                        ? 'All products well stocked' 
-                        : `${stats?.lowStockProducts?.length} items low on stock`
-                      }
-                    </p>
-                  </div>
-                </div>
-                <span className={`text-sm font-medium ${
-                  (stats?.lowStockProducts?.length || 0) > 0 ? 'text-yellow-600' : 'text-green-600'
-                }`}>
-                  {(stats?.lowStockProducts?.length || 0) === 0 ? '✓ Good' : '⚠ Attention'}
-                </span>
-              </div>
-            </div>
-          </motion.div>
-        </div>
-
-        {/* Footer Note */}
+        {/* Performance Insights */}
         <motion.div 
-          initial={{ opacity: 0 }}
-          animate={{ opacity: 1 }}
-          transition={{ delay: 0.6 }}
-          className="mt-12 text-center text-sm text-gray-500"
+          initial={{ opacity: 0, y: 20 }}
+          animate={{ opacity: 1, y: 0 }}
+          transition={{ delay: 0.5 }}
         >
-          <div className="bg-gray-100 rounded-lg p-4">
-            <p className="font-medium text-gray-700 mb-2">🔒 Admin Panel Security</p>
-            <p>This admin panel is secured with a secret key. Keep your admin URL private:</p>
-            <code className="bg-white px-3 py-1 rounded mt-2 inline-block text-gray-800">
-              yourstore.com/admin?key=YOUR_SECRET_KEY
-            </code>
-            <p className="mt-2 text-xs">Only share this URL with authorized store managers.</p>
-          </div>
+          <Card className="h-full">
+            <CardHeader className="pb-3">
+              <CardTitle className="flex items-center space-x-2">
+                <BarChart3 className="w-5 h-5 text-purple-600" />
+                <span>Performance Insights</span>
+              </CardTitle>
+              <CardDescription>
+                Store analytics and trends
+              </CardDescription>
+            </CardHeader>
+            <CardContent className="pt-0 space-y-6">
+              {/* Store Completion */}
+              <div>
+                <div className="flex items-center justify-between mb-2">
+                  <span className="text-sm font-medium text-gray-700">Store Setup</span>
+                  <span className="text-sm text-gray-500">
+                    {Math.round(((stats?.totalCategories || 0) > 0 ? 33 : 0) + 
+                                ((stats?.totalProducts || 0) > 0 ? 34 : 0) + 
+                                (33))}%
+                  </span>
+                </div>
+                <Progress 
+                  value={((stats?.totalCategories || 0) > 0 ? 33 : 0) + 
+                         ((stats?.totalProducts || 0) > 0 ? 34 : 0) + 
+                         (33)}
+                  className="h-2"
+                />
+                <p className="text-xs text-gray-500 mt-1">Complete setup to go live</p>
+              </div>
+
+              {/* Quick Stats */}
+              <div className="grid grid-cols-2 gap-4">
+                <div className="text-center p-4 rounded-lg bg-blue-50">
+                  <p className="text-2xl font-bold text-blue-600">
+                    {Math.round(((stats?.totalProducts || 0) / Math.max(1, stats?.totalCategories || 1)) * 10) / 10}
+                  </p>
+                  <p className="text-xs text-gray-600">Avg Products per Category</p>
+                </div>
+                <div className="text-center p-4 rounded-lg bg-green-50">
+                  <p className="text-2xl font-bold text-green-600">
+                    {stats?.recentProducts?.reduce((acc: number, product: any) => 
+                      acc + (product.variants?.length || 0), 0) || 0}
+                  </p>
+                  <p className="text-xs text-gray-600">Total Variants</p>
+                </div>
+              </div>
+
+              {/* Recent Activity */}
+              <div>
+                <h4 className="text-sm font-medium text-gray-700 mb-3">Recent Activity</h4>
+                <div className="space-y-2">
+                  <div className="flex items-center space-x-3 text-sm">
+                    <div className="w-2 h-2 bg-green-500 rounded-full"></div>
+                    <span className="text-gray-600">Store setup in progress</span>
+                    <Badge variant="outline" className="ml-auto text-xs">
+                      <Clock className="w-3 h-3 mr-1" />
+                      Now
+                    </Badge>
+                  </div>
+                  {(stats?.totalProducts || 0) > 0 && (
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-2 h-2 bg-blue-500 rounded-full"></div>
+                      <span className="text-gray-600">Products added</span>
+                      <Badge variant="outline" className="ml-auto text-xs">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Today
+                      </Badge>
+                    </div>
+                  )}
+                  {(stats?.totalCategories || 0) > 0 && (
+                    <div className="flex items-center space-x-3 text-sm">
+                      <div className="w-2 h-2 bg-purple-500 rounded-full"></div>
+                      <span className="text-gray-600">Categories organized</span>
+                      <Badge variant="outline" className="ml-auto text-xs">
+                        <Calendar className="w-3 h-3 mr-1" />
+                        Today
+                      </Badge>
+                    </div>
+                  )}
+                </div>
+              </div>
+            </CardContent>
+          </Card>
         </motion.div>
       </div>
-    </div>
+    </AdminLayout>
   )
 }

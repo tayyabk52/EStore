@@ -15,6 +15,7 @@ import {
   FolderOpen
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { AdminLayout } from "@/components/admin/admin-layout"
 import Link from "next/link"
 
 // Secret key for admin access
@@ -191,44 +192,35 @@ export default function CategoriesManagement() {
 
   if (!isAuthenticated) {
     return (
-      <div className="min-h-screen bg-gray-50 flex items-center justify-center">
-        <div className="text-center">
-          <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
-          <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
-          <p className="text-gray-600">Invalid or missing admin key</p>
+      <AdminLayout>
+        <div className="min-h-[60vh] flex items-center justify-center">
+          <div className="text-center">
+            <Package className="w-16 h-16 text-gray-400 mx-auto mb-4" />
+            <h1 className="text-2xl font-semibold text-gray-900 mb-2">Access Denied</h1>
+            <p className="text-gray-600">Invalid or missing admin key</p>
+          </div>
         </div>
-      </div>
+      </AdminLayout>
     )
   }
 
   return (
-    <div className="min-h-screen bg-gray-50">
-      {/* Header */}
-      <header className="bg-white shadow-sm border-b border-gray-200">
-        <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8">
-          <div className="flex justify-between items-center py-4">
-            <div className="flex items-center space-x-4">
-              <Link href={`/admin?key=${ADMIN_SECRET_KEY}`}>
-                <Button variant="outline" size="sm">
-                  <ArrowLeft className="w-4 h-4 mr-2" />
-                  Back to Dashboard
-                </Button>
-              </Link>
-              <div>
-                <h1 className="text-2xl font-bold text-gray-900">Category Management</h1>
-                <p className="text-sm text-gray-600">Organize your products into categories</p>
-              </div>
-            </div>
-            
-            <Button onClick={() => setShowAddForm(true)} className="bg-blue-600 hover:bg-blue-700">
-              <Plus className="w-4 h-4 mr-2" />
-              Add Category
-            </Button>
+    <AdminLayout title="Category Management" subtitle="Organize your products into categories">
+      {/* Header Actions */}
+      <div className="flex justify-between items-center mb-8">
+        <div className="flex items-center space-x-3">
+          <Folder className="w-6 h-6 text-purple-600" />
+          <div>
+            <h2 className="text-lg font-semibold text-gray-900">Categories ({categories.length})</h2>
+            <p className="text-sm text-gray-600">Organize your product catalog</p>
           </div>
         </div>
-      </header>
-
-      <div className="max-w-7xl mx-auto px-4 sm:px-6 lg:px-8 py-8">
+        
+        <Button onClick={() => setShowAddForm(true)} className="bg-purple-600 hover:bg-purple-700">
+          <Plus className="w-4 h-4 mr-2" />
+          Add Category
+        </Button>
+      </div>
         {/* How It Works */}
         <div className="bg-blue-50 border border-blue-200 rounded-lg p-4 mb-8">
           <h4 className="text-sm font-semibold text-blue-900 mb-2">Category Structure:</h4>
@@ -312,8 +304,7 @@ export default function CategoriesManagement() {
             </div>
           </div>
         )}
-      </div>
-    </div>
+    </AdminLayout>
   )
 }
 
