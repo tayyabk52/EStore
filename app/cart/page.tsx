@@ -1,7 +1,7 @@
 import CartPageClient from '@/components/cart/CartPageClient'
 
 export const metadata = {
-  title: 'Shopping Cart - EVELON',
+  title: 'Shopping Cart - La Elegance',
   description: 'Review your selected items and proceed to checkout.',
 }
 

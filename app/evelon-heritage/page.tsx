@@ -38,7 +38,7 @@ export default function EvelonHeritagePage() {
               Weaving Tradition into Tomorrow
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              EVELON was born from a profound respect for Pakistan&apos;s rich textile heritage. 
+              La Elegance was born from a profound respect for Pakistan&apos;s rich textile heritage. 
               Our journey began with a simple belief: that the ancient arts of our craftsmen 
               deserve a place in the modern world, elevated to their rightful status as luxury.
             </p>
@@ -54,7 +54,7 @@ export default function EvelonHeritagePage() {
               </p>
               <p className="text-gray-600 leading-relaxed mb-8">
                 Our master artisans continue this tradition, using natural indigo and madder dyes to create 
-                the distinctive deep blues and rich reds that define authentic Ajrak. Every EVELON piece 
+                the distinctive deep blues and rich reds that define authentic Ajrak. Every La Elegance piece 
                 bearing these sacred patterns carries the soul of centuries-old wisdom.
               </p>
               <Button className="bg-gradient-to-r from-indigo-600 to-purple-600 hover:from-indigo-700 hover:to-purple-700 text-white border-0">
@@ -113,7 +113,7 @@ export default function EvelonHeritagePage() {
               Our Artisan Partners
             </h2>
             <p className="text-lg text-gray-600 max-w-2xl mx-auto leading-relaxed">
-              Behind every EVELON creation stands a master craftsperson, keeper of ancestral knowledge 
+              Behind every La Elegance creation stands a master craftsperson, keeper of ancestral knowledge 
               and guardian of our cultural legacy.
             </p>
           </div>

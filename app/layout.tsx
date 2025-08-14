@@ -6,12 +6,12 @@ import { Toaster } from "@/components/ui/sonner";
 import { CartProvider } from "@/lib/cart-context";
 
 export const metadata: Metadata = {
-  title: "EVELON - Premium Pakistani Heritage Fashion",
+  title: "La Elegance - Premium Pakistani Heritage Fashion",
   description: "Where Pakistani heritage meets modern elegance. Discover premium clothing that celebrates artisan craftsmanship and cultural sophistication.",
   keywords: "premium fashion, Pakistani heritage, luxury clothing, modern elegance, artisan craftsmanship",
-  authors: [{ name: "EVELON" }],
-  creator: "EVELON",
-  publisher: "EVELON",
+  authors: [{ name: "La Elegance" }],
+  creator: "La Elegance",
+  publisher: "La Elegance",
   formatDetection: {
     email: false,
     address: false,
@@ -25,13 +25,13 @@ export const metadata: Metadata = {
     type: 'website',
     locale: 'en_US',
     url: 'https://evelon.com',
-    siteName: 'EVELON',
-    title: 'EVELON - Premium Pakistani Heritage Fashion',
+    siteName: 'La Elegance',
+    title: 'La Elegance - Premium Pakistani Heritage Fashion',
     description: 'Where Pakistani heritage meets modern elegance.',
   },
   twitter: {
     card: 'summary_large_image',
-    title: 'EVELON - Premium Pakistani Heritage Fashion',
+    title: 'La Elegance - Premium Pakistani Heritage Fashion',
     description: 'Where Pakistani heritage meets modern elegance.',
   },
 };

@@ -92,7 +92,7 @@ export function Footer() {
           {/* Company Info */}
           <div className="col-span-2 lg:col-span-1">
             <Link href="/" className="text-2xl font-light tracking-[0.2em] text-black mb-4 block">
-              EVELON
+              La Elegance
             </Link>
             <p className="text-neutral-600 text-sm mb-4 leading-relaxed">
               Premium fashion meets modern elegance.
@@ -176,7 +176,7 @@ export function Footer() {
             
             {/* Copyright */}
             <div className="flex items-center gap-4">
-              <span>&copy; 2024 EVELON. All rights reserved.</span>
+              <span>&copy; 2024 La Elegance. All rights reserved.</span>
               <span className="hidden sm:inline">Premium fashion redefined.</span>
             </div>
 

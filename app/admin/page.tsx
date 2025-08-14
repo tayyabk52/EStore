@@ -29,6 +29,7 @@ import { Card, CardContent, CardDescription, CardHeader, CardTitle } from "@/com
 import { Progress } from "@/components/ui/progress"
 import { Badge } from "@/components/ui/badge"
 import { AdminLayout } from "@/components/admin/admin-layout"
+import { formatPrice } from "@/lib/currency"
 import Link from "next/link"
 
 // Secret key for admin access
@@ -162,7 +163,7 @@ export default function AdminDashboard() {
           <CardContent>
             <div className="space-y-1">
               <div className="text-2xl font-bold text-gray-900">
-                ${(stats?.totalRevenue || 0).toLocaleString()}
+                {formatPrice(stats?.totalRevenue || 0)}
               </div>
               <div className="flex items-center space-x-1 text-sm">
                 <ArrowUpRight className="w-4 h-4 text-green-500" />
@@ -473,7 +474,7 @@ export default function AdminDashboard() {
                         </p>
                         <div className="flex items-center space-x-2 mt-1">
                           <Badge variant="secondary" className="text-xs px-2 py-0">
-                            ${product.variants?.[0]?.price || 0}
+                            {formatPrice(product.variants?.[0]?.price || 0, product.variants?.[0]?.currency)}
                           </Badge>
                           <Badge 
                             variant={product.variants?.[0]?.stock < 10 ? "destructive" : "default"}

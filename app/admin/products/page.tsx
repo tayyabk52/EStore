@@ -29,7 +29,10 @@ import {
   Calendar
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
+import { SmartImage } from "@/components/ui/smart-image"
+import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { AdminLayout } from "@/components/admin/admin-layout"
+import { formatPriceRange, getDefaultCurrency, getAllCurrencies, getCurrencySymbol } from "@/lib/currency"
 import Link from "next/link"
 import type { Category as FrontCategory } from '@/lib/products-frontend'
 // Local admin type for Collection
@@ -391,10 +394,11 @@ export default function ProductsManagement() {
                   {/* Product Image */}
                   <div className="relative h-48 overflow-hidden bg-gray-100">
                     {product.images?.[0]?.url ? (
-                      <img
+                      <SmartImage
                         src={product.images[0].url}
                         alt={product.title}
                         className="w-full h-full object-cover"
+                        fallbackSrc={FALLBACK_IMAGES.grid}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -453,7 +457,11 @@ export default function ProductsManagement() {
                         <div className="text-sm">
                           <span className="text-gray-500">Price: </span>
                           <span className="font-semibold text-green-600">
-                            ${Math.min(...product.variants.map(v => Number(v.price) || 0)).toFixed(2)} - ${Math.max(...product.variants.map(v => Number(v.price) || 0)).toFixed(2)}
+                            {formatPriceRange(
+                              Math.min(...product.variants.map(v => Number(v.price) || 0)),
+                              Math.max(...product.variants.map(v => Number(v.price) || 0)),
+                              product.currency
+                            )}
                           </span>
                         </div>
                       )}
@@ -522,10 +530,11 @@ export default function ProductsManagement() {
                           <div className="flex items-center">
                             <div className="w-10 h-10 rounded-lg overflow-hidden bg-gray-200 mr-3">
                               {product.images?.[0]?.url ? (
-                                <img
+                                <SmartImage
                                   src={product.images[0].url}
                                   alt={product.title}
                                   className="w-full h-full object-cover"
+                                  fallbackSrc={FALLBACK_IMAGES.grid}
                                 />
                               ) : (
                                 <div className="w-full h-full flex items-center justify-center text-gray-400">
@@ -695,7 +704,7 @@ function ProductForm({
     shortDescription: product?.shortDescription || '',
     brand: product?.brand || '',
     categoryId: product?.categoryId || '',
-    currency: product?.currency || 'USD',
+    currency: product?.currency || getDefaultCurrency(),
     status: product?.status || 'PUBLISHED',
     
     // Product Flags
@@ -718,7 +727,7 @@ function ProductForm({
           title: v.title || '',
           price: Number(v.price || 0),
           compareAtPrice: v.compareAtPrice != null ? Number(v.compareAtPrice) : null,
-          currency: v.currency || 'USD',
+          currency: v.currency || getDefaultCurrency(),
           stock: Number(v.stock || 0),
           isDefault: !!v.isDefault,
           attributes: v.attributes || {},
@@ -731,7 +740,7 @@ function ProductForm({
             title: 'Default',
             price: 0,
             compareAtPrice: null,
-            currency: 'USD',
+            currency: getDefaultCurrency(),
             stock: 0,
             isDefault: true,
             attributes: {},
@@ -771,7 +780,7 @@ function ProductForm({
       shortDescription: product?.shortDescription || '',
       brand: product?.brand || '',
       categoryId: product?.categoryId || '',
-      currency: product?.currency || 'USD',
+      currency: product?.currency || getDefaultCurrency(),
       status: product?.status || 'PUBLISHED',
       isActive: product?.isActive ?? true,
       isFeatured: product?.isFeatured ?? false,
@@ -790,7 +799,7 @@ function ProductForm({
             title: v.title || '',
             price: Number(v.price || 0),
             compareAtPrice: v.compareAtPrice != null ? Number(v.compareAtPrice) : null,
-            currency: v.currency || 'USD',
+            currency: v.currency || getDefaultCurrency(),
             stock: Number(v.stock || 0),
             isDefault: !!v.isDefault,
             attributes: v.attributes || {},
@@ -803,7 +812,7 @@ function ProductForm({
               title: 'Default',
               price: 0,
               compareAtPrice: null,
-              currency: 'USD',
+              currency: getDefaultCurrency(),
               stock: 0,
               isDefault: true,
               attributes: {},
@@ -872,7 +881,7 @@ function ProductForm({
       title: '',
       price: 0,
       compareAtPrice: null,
-      currency: 'USD',
+      currency: getDefaultCurrency(),
       stock: 0,
       isDefault: false,
       attributes: {},
@@ -1131,15 +1140,19 @@ function ProductForm({
                 <div>
                   <label className="block text-sm font-medium text-gray-700 mb-2">
                     Currency
-                    <InfoTip text={"Money code. Example: USD, EUR"} />
+                    <InfoTip text={"Choose the currency for this product. Example: PKR, USD, EUR"} />
                   </label>
-                  <input
-                    type="text"
+                  <select
                     value={formData.currency}
                     onChange={(e) => handleChange('currency', e.target.value)}
                     className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                    placeholder="USD"
-                  />
+                  >
+                    {getAllCurrencies().map((currency) => (
+                      <option key={currency.code} value={currency.code}>
+                        {currency.code} ({currency.symbol}) - {currency.name}
+                      </option>
+                    ))}
+                  </select>
                 </div>
                 <div className="md:col-span-2">
                   <label className="block text-sm font-medium text-gray-700 mb-2">
@@ -1287,17 +1300,21 @@ function ProductForm({
                   </div>
 
                   <div>
-                  <label className="block text-sm font-medium text-gray-700 mb-2">
-                    Currency
-                    <InfoTip text={"Money code for variant. Example: USD"} />
-                  </label>
-                    <input
-                      type="text"
+                    <label className="block text-sm font-medium text-gray-700 mb-2">
+                      Currency
+                      <InfoTip text={"Currency for this variant. Usually same as product currency."} />
+                    </label>
+                    <select
                       value={variant.currency}
                       onChange={(e) => updateVariant(index, 'currency', e.target.value)}
                       className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="USD"
-                    />
+                    >
+                      {getAllCurrencies().map((currency) => (
+                        <option key={currency.code} value={currency.code}>
+                          {currency.code} ({currency.symbol})
+                        </option>
+                      ))}
+                    </select>
                   </div>
 
                   <div>

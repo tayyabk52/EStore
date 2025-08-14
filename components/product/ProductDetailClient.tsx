@@ -9,6 +9,9 @@ import { cartService } from '@/lib/cart'
 import { wishlistService } from '@/lib/wishlist'
 import { authService } from '@/lib/auth'
 import { useCart } from '@/lib/cart-context'
+import { formatPrice } from '@/lib/currency'
+import { SmartImage } from '@/components/ui/smart-image'
+import { FALLBACK_IMAGES, getOptimizedImageUrl } from '@/lib/image-utils'
 
 export default function ProductDetailClient({ product }: { product: Product }) {
   const { incrementCartCount, incrementWishlistCount } = useCart()
@@ -92,12 +95,13 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         {/* Mobile Gallery Section */}
         <div className="relative mb-6">
           <div className="aspect-[4/5] relative overflow-hidden bg-neutral-50 border border-neutral-100 shadow-sm">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <SmartImage
               src={sortedImages[selectedImageIndex]?.url || ''}
               alt={sortedImages[selectedImageIndex]?.alt || product.title}
               className="w-full h-full object-cover"
-              onClick={() => setIsViewerOpen(true)}
+              fallbackSrc={FALLBACK_IMAGES.hero}
+              onLoad={() => {}}
+              onError={() => {}}
             />
           </div>
           
@@ -115,11 +119,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   }`}
                   onClick={() => setSelectedImageIndex(idx)}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={img.url} 
-                    alt={img.alt || product.title} 
-                    className="w-full h-full object-cover" 
+                  <SmartImage 
+                    src={img.url}
+                    alt={img.alt || product.title}
+                    className="w-full h-full object-cover"
+                    fallbackSrc={FALLBACK_IMAGES.grid}
                   />
                 </button>
               ))}
@@ -144,12 +148,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           {/* Mobile Pricing */}
           <div className="flex items-baseline gap-3">
             <span className="text-2xl font-light text-black">
-              ${price.toFixed(2)}
+              {formatPrice(price, selectedVariant?.currency)}
             </span>
             {compareAt && compareAt > price && (
               <div className="relative">
                 <span className="text-lg text-neutral-400 font-light">
-                  ${compareAt.toFixed(2)}
+                  {formatPrice(compareAt, selectedVariant?.currency)}
                 </span>
                 <div className="absolute top-1/2 left-0 w-full h-0.5 bg-neutral-400 transform -translate-y-1/2"></div>
               </div>
@@ -378,12 +382,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
         {/* Desktop Gallery */}
         <div>
           <div className="group relative aspect-[4/5] bg-gradient-to-br from-neutral-50 to-neutral-100 border border-neutral-100 overflow-hidden mb-8 shadow-lg hover:shadow-2xl transition-all duration-500">
-            {/* eslint-disable-next-line @next/next/no-img-element */}
-            <img
+            <SmartImage
               src={sortedImages[selectedImageIndex]?.url || ''}
               alt={sortedImages[selectedImageIndex]?.alt || product.title}
               className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-105 cursor-zoom-in"
-              onClick={() => setIsViewerOpen(true)}
+              fallbackSrc={FALLBACK_IMAGES.hero}
             />
             <div className="pointer-events-none absolute inset-0 bg-gradient-to-t from-black/5 via-transparent to-transparent opacity-0 group-hover:opacity-100 transition-opacity duration-500" />
             
@@ -412,11 +415,11 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                   }`}
                   onClick={() => setSelectedImageIndex(idx)}
                 >
-                  {/* eslint-disable-next-line @next/next/no-img-element */}
-                  <img 
-                    src={img.url} 
-                    alt={img.alt || product.title} 
-                    className="w-full h-full object-cover transition-all duration-300 group-hover/thumb:scale-105" 
+                  <SmartImage 
+                    src={img.url}
+                    alt={img.alt || product.title}
+                    className="w-full h-full object-cover transition-all duration-300 group-hover/thumb:scale-105"
+                    fallbackSrc={FALLBACK_IMAGES.grid}
                   />
                   {idx === selectedImageIndex && (
                     <div className="absolute inset-0 bg-gradient-to-t from-black/10 via-transparent to-transparent"></div>
@@ -445,12 +448,12 @@ export default function ProductDetailClient({ product }: { product: Product }) {
           <div className="space-y-4">
             <div className="flex items-baseline gap-4 flex-wrap">
               <span className="text-4xl font-light text-black tracking-wide">
-                ${price.toFixed(2)}
+                {formatPrice(price, selectedVariant?.currency)}
               </span>
               {compareAt && compareAt > price && (
                 <div className="relative">
                   <span className="text-xl text-neutral-400 font-light tracking-wide">
-                    ${compareAt.toFixed(2)}
+                    {formatPrice(compareAt, selectedVariant?.currency)}
                   </span>
                   <div className="absolute top-1/2 left-0 w-full h-0.5 bg-neutral-400 transform -translate-y-1/2"></div>
                 </div>
@@ -704,7 +707,7 @@ export default function ProductDetailClient({ product }: { product: Product }) {
                 animate={{ opacity: 1, scale: 1 }}
                 exit={{ opacity: 0, scale: 0.98 }}
                 transition={{ duration: 0.25 }}
-                src={sortedImages[selectedImageIndex]?.url || ''}
+                src={getOptimizedImageUrl(sortedImages[selectedImageIndex]?.url || '')}
                 alt={sortedImages[selectedImageIndex]?.alt || product.title}
                 className="w-full h-full object-contain max-h-[80vh] bg-black"
               />

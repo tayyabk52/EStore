@@ -41,7 +41,7 @@ export function Navigation() {
   const topMessages = [
     "Free shipping worldwide",
     "Premium service guaranteed",
-    "Welcome to EVELON",
+    "Welcome to La Elegance",
   ]
   const [msgIndex, setMsgIndex] = useState(0)
   useEffect(() => {
@@ -440,7 +440,7 @@ export function Navigation() {
             
             {/* Logo */}
             <Link href="/" className="text-2xl md:text-3xl font-light tracking-[0.15em] md:tracking-[0.3em] text-black hover:text-gray-600 transition-all duration-300">
-              EVELON
+              La Elegance
             </Link>
 
             {/* Main Navigation Links */}
@@ -776,7 +776,7 @@ export function Navigation() {
               {/* Premium Header */}
               <div className="flex items-center justify-between px-5 py-5 border-b border-neutral-100/50 bg-gradient-to-r from-white/95 to-neutral-50/30">
                 <Link href="/" className="text-xl font-light tracking-[0.15em] text-black hover:text-neutral-600 transition-colors duration-300" onClick={() => setIsMobileMenuOpen(false)}>
-                  EVELON
+                  La Elegance
                 </Link>
                 <Button variant="ghost" size="icon" className="hover:bg-neutral-100/60 rounded-full transition-all duration-200 h-8 w-8" onClick={() => setIsMobileMenuOpen(false)}>
                   <X className="h-4 w-4 text-neutral-600" />

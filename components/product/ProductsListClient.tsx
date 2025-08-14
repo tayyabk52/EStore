@@ -8,6 +8,9 @@ import { cartService } from '@/lib/cart'
 import { wishlistService } from '@/lib/wishlist'
 import { authService } from '@/lib/auth'
 import { useCart } from '@/lib/cart-context'
+import { formatPrice as formatCurrency } from '@/lib/currency'
+import { SmartImage } from '@/components/ui/smart-image'
+import { FALLBACK_IMAGES } from '@/lib/image-utils'
 
 type Image = { url: string; alt?: string; isPrimary?: boolean; sortOrder?: number }
 type Variant = { id: string; price: number; compareAtPrice?: number; stock: number; isDefault?: boolean; currency?: string }
@@ -213,11 +216,11 @@ export default function ProductsListClient({ products }: { products: ListingProd
                 <Link href={`/products/${p.slug}`} className="block relative overflow-hidden rounded-t-xl sm:rounded-t-2xl">
                   <div className="aspect-[4/5] bg-gradient-to-br from-neutral-50 to-neutral-100 relative overflow-hidden">
                     {primaryImage ? (
-                      <img 
-                        src={primaryImage} 
-                        alt={p.title} 
+                      <SmartImage 
+                        src={primaryImage}
+                        alt={p.title}
                         className="w-full h-full object-cover transition-all duration-500 group-hover:scale-[1.03] sm:group-hover:scale-105"
-                        loading="lazy"
+                        fallbackSrc={FALLBACK_IMAGES.grid}
                       />
                     ) : (
                       <div className="w-full h-full flex items-center justify-center text-neutral-400">
@@ -451,11 +454,11 @@ export default function ProductsListClient({ products }: { products: ListingProd
                     <Link href={`/products/${p.slug}`} className="block shrink-0 group/image">
                       <div className="relative w-20 sm:w-28 lg:w-36 xl:w-44 aspect-[4/5] bg-gradient-to-br from-neutral-50 to-neutral-100 rounded-lg sm:rounded-xl overflow-hidden shadow-md group-hover/image:shadow-xl transition-shadow duration-300">
                         {primaryImage ? (
-                          <img 
-                            src={primaryImage} 
-                            alt={p.title} 
+                          <SmartImage 
+                            src={primaryImage}
+                            alt={p.title}
                             className="absolute inset-0 w-full h-full object-cover transition-all duration-500 group-hover/image:scale-105"
-                            loading="lazy"
+                            fallbackSrc={FALLBACK_IMAGES.grid}
                           />
                         ) : (
                           <div className="w-full h-full flex items-center justify-center text-neutral-400">
@@ -694,18 +697,7 @@ function getInStock(p: ListingProduct): boolean {
 }
 
 function formatPrice(value: number, currency?: string) {
-  const symbol = getCurrencySymbol(currency)
-  return `${symbol}${(value ?? 0).toFixed(2)}`
-}
-
-function getCurrencySymbol(code?: string) {
-  switch ((code || 'USD').toUpperCase()) {
-    case 'EUR': return '€'
-    case 'GBP': return '£'
-    case 'INR': return '₹'
-    case 'USD':
-    default: return '$'
-  }
+  return formatCurrency(value, currency)
 }
 
 

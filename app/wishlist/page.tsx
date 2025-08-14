@@ -1,7 +1,7 @@
 import WishlistPageClient from '@/components/wishlist/WishlistPageClient'
 
 export const metadata = {
-  title: 'Wishlist - EVELON',
+  title: 'Wishlist - La Elegance',
   description: 'Save your favorite pieces and shop them later.',
 }
 

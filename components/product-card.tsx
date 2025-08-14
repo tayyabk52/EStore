@@ -4,6 +4,7 @@ import { motion } from "framer-motion"
 import { Star, Heart, ShoppingCart } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { Card, CardContent } from "@/components/ui/card"
+import { formatPrice } from "@/lib/currency"
 
 interface ProductCardProps {
   product: {
@@ -112,10 +113,10 @@ export function ProductCard({ product, onAddToCart, onAddToWishlist }: ProductCa
             
             {/* Price */}
             <div className="flex items-center space-x-2 mb-3">
-              <span className="text-lg font-bold">${product.price.toFixed(2)}</span>
+              <span className="text-lg font-bold">{formatPrice(product.price)}</span>
               {isOnSale && (
                 <span className="text-sm text-gray-500 line-through">
-                  ${product.originalPrice?.toFixed(2)}
+                  {formatPrice(product.originalPrice || 0)}
                 </span>
               )}
             </div>

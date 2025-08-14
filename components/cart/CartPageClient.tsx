@@ -7,6 +7,7 @@ import Link from 'next/link'
 import { cartService, type Cart, type CartItem } from '@/lib/cart'
 import { authService } from '@/lib/auth'
 import { useCart } from '@/lib/cart-context'
+import { formatPrice as formatCurrency } from '@/lib/currency'
 
 export default function CartPageClient() {
   const { refreshCounts } = useCart()
@@ -88,7 +89,7 @@ export default function CartPageClient() {
     return cart.items.reduce((total, item) => total + (item.unitPrice * item.quantity), 0)
   }
 
-  const formatPrice = (price: number) => `$${price.toFixed(2)}`
+  const formatPrice = (price: number, currency?: string) => formatCurrency(price, currency)
 
   if (!isClient) {
     return (
@@ -265,11 +266,11 @@ export default function CartPageClient() {
 
                       <div className="text-right">
                         <div className="font-medium text-black">
-                          {formatPrice(item.unitPrice * item.quantity)}
+                          {formatPrice(item.unitPrice * item.quantity, item.currency)}
                         </div>
                         {item.quantity > 1 && (
                           <div className="text-xs text-neutral-600">
-                            {formatPrice(item.unitPrice)} each
+                            {formatPrice(item.unitPrice, item.currency)} each
                           </div>
                         )}
                       </div>

@@ -142,7 +142,7 @@ export function AdminLayout({ children, title, subtitle }: AdminLayoutProps) {
               <Crown className="h-5 w-5" />
             </div>
             <div>
-              <h1 className="text-lg font-bold text-gray-900">EVELON</h1>
+              <h1 className="text-lg font-bold text-gray-900">La Elegance</h1>
               <p className="text-xs text-gray-500 font-medium">Admin Panel</p>
             </div>
           </Link>

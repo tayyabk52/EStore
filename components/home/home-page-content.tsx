@@ -2,8 +2,11 @@
 
 import Link from "next/link"
 import { Button } from "@/components/ui/button"
+import { SmartImage } from "@/components/ui/smart-image"
+import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { ArrowRight, Truck, Shield, Crown, Calendar, Sparkles } from "lucide-react"
 import { DynamicCollectionsLayout } from "./DynamicCollectionsLayout"
+import { formatPrice } from "@/lib/currency"
 
 // Custom CSS for luxury animations
 const luxuryStyles = `
@@ -78,13 +81,17 @@ export default function HomePageContent({
       <div className="min-h-screen bg-white">
       {/* Luxury Hero Section */}
       <section className="relative min-h-[75vh] md:min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Premium Background with Parallax Effect */}
-        <div 
-          className="absolute inset-0 bg-cover bg-center bg-no-repeat transform scale-105 hover:scale-110 transition-transform duration-[12000ms] ease-out animate-float-gentle"
-          style={{
-            backgroundImage: `url('https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80')`
-          }}
-        />
+        {/* Premium Background Video */}
+        <video
+          className="absolute inset-0 w-full h-full object-cover transform scale-105 hover:scale-110 transition-transform duration-[12000ms] ease-out"
+          autoPlay
+          muted
+          loop
+          playsInline
+          poster="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80"
+        >
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-exquisite-diamond-necklace-4073-large.mp4" type="video/mp4" />
+        </video>
         
         {/* Sophisticated Gradient Overlay */}
         <div className="absolute inset-0 bg-gradient-to-br from-black/40 via-black/30 to-black/50" />
@@ -256,9 +263,11 @@ export default function HomePageContent({
                 {/* Luxury Image Container */}
                 <div className="relative overflow-hidden mb-4 sm:mb-6 bg-gradient-to-br from-gray-50 to-gray-100">
                   {primaryImage ? (
-                    <div 
-                      className="aspect-[4/5] lg:aspect-[3/4] bg-cover bg-center transition-all duration-1000 group-hover:scale-110"
-                      style={{ backgroundImage: `url('${primaryImage}')` }}
+                    <SmartImage 
+                      src={primaryImage}
+                      alt={product.title}
+                      className="w-full h-full object-cover transition-all duration-1000 group-hover:scale-110 aspect-[4/5] lg:aspect-[3/4]"
+                      fallbackSrc={FALLBACK_IMAGES.grid}
                     />
                   ) : (
                     <div className="aspect-[4/5] lg:aspect-[3/4] bg-gradient-to-br from-gray-100 to-gray-200 flex items-center justify-center">
@@ -323,11 +332,11 @@ export default function HomePageContent({
                     <div className="flex flex-col">
                       <div className="flex items-center space-x-2 sm:space-x-3">
                         <span className="text-lg sm:text-xl lg:text-2xl font-light text-black tracking-wide">
-                          ${price.toFixed(2)}
+                          {formatPrice(price, defaultVariant?.currency)}
                         </span>
                         {compareAt && compareAt > price && (
                           <span className="text-sm sm:text-base text-neutral-400 line-through font-light">
-                            ${compareAt.toFixed(2)}
+                            {formatPrice(compareAt, defaultVariant?.currency)}
                           </span>
                         )}
                       </div>

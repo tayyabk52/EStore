@@ -82,7 +82,7 @@ export default function AboutPage() {
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-[0.15em] text-black mb-8 leading-none">
-              ABOUT EVELON
+              ABOUT LA ELEGANCE
             </h1>
             
             <p className="text-xl md:text-2xl text-neutral-600 mb-10 max-w-3xl mx-auto leading-relaxed font-light">
@@ -128,7 +128,7 @@ export default function AboutPage() {
             >
               <div className="space-y-8">
                 <p className="text-xl text-neutral-600 leading-[1.8] font-light">
-                  Born from a vision to revolutionize Pakistani fashion, EVELON emerged as the country&apos;s 
+                  Born from a vision to revolutionize Pakistani fashion, La Elegance emerged as the country&apos;s 
                   first luxury brand to prioritize environmental responsibility without compromising on elegance. 
                   <em className="text-neutral-500 font-normal">We believe that true luxury lies not just in exquisite design, but in the positive impact we create.</em>
                 </p>
@@ -140,7 +140,7 @@ export default function AboutPage() {
                 </p>
 
                 <p className="text-xl text-neutral-600 leading-[1.8] font-light border-l-2 border-neutral-200 pl-6">
-                  Today, EVELON stands as a beacon of conscious fashion, proving that premium quality 
+                  Today, La Elegance stands as a beacon of conscious fashion, proving that premium quality 
                   and environmental stewardship can beautifully coexist.
                 </p>
               </div>
@@ -212,7 +212,7 @@ export default function AboutPage() {
               <div className="w-20 h-px bg-gradient-to-r from-transparent via-black to-transparent mb-10"></div>
               
               <p className="text-xl text-neutral-600 leading-[1.8] mb-8 font-light">
-                Every EVELON piece arrives in our signature eco-luxury packaging, crafted from 
+                Every La Elegance piece arrives in our signature eco-luxury packaging, crafted from 
                 100% biodegradable materials that reflect our commitment to the environment.
               </p>
               
