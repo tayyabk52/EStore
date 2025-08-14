@@ -2,7 +2,20 @@
  * Utility functions for handling image URLs from various sources
  */
 
-export function convertGoogleDriveUrl(url: string): string {
+function normalizeImageUrl(raw: string): string {
+  if (!raw) return ''
+  let url = String(raw).trim()
+  // Remove any leading markers some admins may prepend like '@'
+  while (url.startsWith('@')) url = url.slice(1).trim()
+  // Strip surrounding quotes if pasted with them
+  if ((url.startsWith('"') && url.endsWith('"')) || (url.startsWith("'") && url.endsWith("'"))) {
+    url = url.slice(1, -1)
+  }
+  return url
+}
+
+export function convertGoogleDriveUrl(rawUrl: string): string {
+  const url = normalizeImageUrl(rawUrl)
   if (!url) return ''
 
   // Handle Google Drive sharing URLs
@@ -31,7 +44,8 @@ export function convertGoogleDriveUrl(url: string): string {
 }
 
 // Get all possible Google Drive URL formats for fallback
-export function getGoogleDriveUrlVariants(url: string): string[] {
+export function getGoogleDriveUrlVariants(rawUrl: string): string[] {
+  const url = normalizeImageUrl(rawUrl)
   if (!url) return []
 
   const driveRegex = /https:\/\/drive\.google\.com\/file\/d\/([a-zA-Z0-9_-]+)/
@@ -43,6 +57,7 @@ export function getGoogleDriveUrlVariants(url: string): string[] {
       `https://lh3.googleusercontent.com/d/${fileId}`,
       `https://drive.google.com/uc?export=view&id=${fileId}`,
       `https://drive.google.com/uc?id=${fileId}`,
+      `https://drive.google.com/uc?export=download&id=${fileId}`,
       `https://drive.google.com/thumbnail?id=${fileId}&sz=w1000-h1000`,
     ]
   }

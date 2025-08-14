@@ -81,16 +81,17 @@ export default function HomePageContent({
       <div className="min-h-screen bg-white">
       {/* Luxury Hero Section */}
       <section className="relative min-h-[75vh] md:min-h-screen flex items-center justify-center overflow-hidden">
-        {/* Premium Background Video */}
+        {/* Premium Background Video - Luxury Jewelry Store */}
         <video
-          className="absolute inset-0 w-full h-full object-cover transform scale-105 hover:scale-110 transition-transform duration-[12000ms] ease-out"
+          className="absolute inset-0 w-full h-full object-cover"
           autoPlay
           muted
           loop
           playsInline
-          poster="https://images.unsplash.com/photo-1521737711867-e3b97375f902?ixlib=rb-4.0.3&ixid=M3wxMjA3fDB8MHxwaG90by1wYWdlfHx8fGVufDB8fHx8fA%3D%3D&auto=format&fit=crop&w=1887&q=80"
+          poster="https://images.unsplash.com/photo-1606760227091-3dd870d97f1d?ixlib=rb-4.0.3&auto=format&fit=crop&w=1920&q=80"
         >
-          <source src="https://assets.mixkit.co/videos/preview/mixkit-exquisite-diamond-necklace-4073-large.mp4" type="video/mp4" />
+          <source src="https://player.vimeo.com/external/434045526.hd.mp4?s=c27eecc69a27dcc1dcb9259d43c8b071b5f87258&profile_id=169" type="video/mp4" />
+          <source src="https://assets.mixkit.co/videos/preview/mixkit-luxury-jewelry-collection-4067-large.mp4" type="video/mp4" />
         </video>
         
         {/* Sophisticated Gradient Overlay */}
@@ -290,7 +291,7 @@ export default function HomePageContent({
                   </div>
                   
                   {/* Refined Heart Icon */}
-                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0">
+                  <div className="absolute top-3 sm:top-4 right-3 sm:right-4 opacity-0 group-hover:opacity-100 transition-all duration-500 transform translate-y-2 group-hover:translate-y-0 z-20">
                     <button className="w-10 h-10 sm:w-12 sm:h-12 bg-white/90 backdrop-blur-md hover:bg-white rounded-full flex items-center justify-center shadow-xl border border-white/30 hover:scale-110 transition-all duration-300">
                       <svg className="w-4 h-4 sm:w-5 sm:h-5 text-neutral-700" fill="none" stroke="currentColor" viewBox="0 0 24 24">
                         <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={1.5} d="M4.318 6.318a4.5 4.5 0 000 6.364L12 20.364l7.682-7.682a4.5 4.5 0 00-6.364-6.364L12 7.636l-1.318-1.318a4.5 4.5 0 00-6.364 0z" />
@@ -299,11 +300,14 @@ export default function HomePageContent({
                   </div>
                   
                   {/* Premium Quick Add Overlay */}
-                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-6 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 ease-out">
+                  <div className="absolute inset-x-0 bottom-0 bg-gradient-to-t from-black/80 via-black/40 to-transparent p-4 sm:p-6 transform translate-y-full group-hover:translate-y-0 transition-all duration-500 ease-out z-20">
                     <button className="w-full bg-white text-black py-3 sm:py-4 text-xs sm:text-sm font-bold tracking-[0.1em] uppercase hover:bg-neutral-100 transition-all duration-300 shadow-lg backdrop-blur-sm">
                       ADD TO CART
                     </button>
                   </div>
+
+                  {/* Click-through overlay to product page */}
+                  <Link href={`/products/${product.slug}`} aria-label={product.title} className="absolute inset-0 z-10" />
                 </div>
                 
                 {/* Sophisticated Product Information */}
@@ -316,9 +320,11 @@ export default function HomePageContent({
                   )}
                   
                   {/* Product Title */}
-                  <h3 className="text-sm sm:text-base lg:text-lg font-medium text-black group-hover:text-neutral-700 transition-colors leading-tight tracking-wide line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
-                    {product.title}
-                  </h3>
+                  <Link href={`/products/${product.slug}`} className="block">
+                    <h3 className="text-sm sm:text-base lg:text-lg font-medium text-black group-hover:text-neutral-700 transition-colors leading-tight tracking-wide line-clamp-2 min-h-[2.5rem] sm:min-h-[3rem]">
+                      {product.title}
+                    </h3>
+                  </Link>
                   
                   {/* Category */}
                   {product.category && (
