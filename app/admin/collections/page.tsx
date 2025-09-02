@@ -355,11 +355,11 @@ export default function CollectionsAdmin() {
                   <div className="text-sm text-gray-500 space-y-1">
                     <p><strong>Supported sources:</strong></p>
                     <ul className="list-disc list-inside ml-2 space-y-0.5">
-                      <li><strong>Google Drive:</strong> Right-click → Get link → Set to &quot;Anyone with the link&quot; → Copy</li>
+                      <li><strong>Google Drive:</strong> Right-click → Get link → Set to "Anyone with the link" → Copy</li>
                       <li><strong>Unsplash:</strong> Copy image URL for free stock photos</li>
                       <li><strong>Direct URLs:</strong> Any direct image URL (.jpg, .png, etc.)</li>
                     </ul>
-                    <p className="text-blue-600"><strong>Google Drive tip:</strong> Make sure the file permission is set to &quot;Anyone with the link can view&quot; for images to display properly.</p>
+                    <p className="text-blue-600"><strong>Google Drive tip:</strong> Make sure the file permission is set to "Anyone with the link can view" for images to display properly.</p>
                     <p>Recommended size: 1200x800px for best quality across all card types.</p>
                   </div>
                   

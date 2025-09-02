@@ -38,7 +38,7 @@ export default function EvelonHeritagePage() {
               Weaving Tradition into Tomorrow
             </h2>
             <p className="text-lg text-gray-600 leading-relaxed">
-              La Elegance was born from a profound respect for Pakistan&apos;s rich textile heritage. 
+              La Elegance was born from a profound respect for Pakistan's rich textile heritage. 
               Our journey began with a simple belief: that the ancient arts of our craftsmen 
               deserve a place in the modern world, elevated to their rightful status as luxury.
             </p>
@@ -85,7 +85,7 @@ export default function EvelonHeritagePage() {
             <div className="order-1 lg:order-2">
               <h3 className="text-2xl font-light mb-6 text-gray-900">The Beauty of Phulkari</h3>
               <p className="text-gray-600 leading-relaxed mb-6">
-                From the fertile plains of Punjab comes Phulkari — literally meaning &quot;flower work.&quot; 
+                From the fertile plains of Punjab comes Phulkari — literally meaning "flower work." 
                 This exquisite embroidery technique transforms simple fabrics into gardens of silk, 
                 where every stitch blooms with color and life.
               </p>

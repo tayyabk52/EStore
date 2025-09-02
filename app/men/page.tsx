@@ -169,7 +169,7 @@ export default function MenPage() {
             </div>
             
             <h1 className="text-5xl md:text-7xl lg:text-8xl font-extralight tracking-[0.15em] text-white mb-6 leading-none">
-              MEN&apos;S COLLECTION
+              MEN'S COLLECTION
             </h1>
             
             <p className="text-xl md:text-2xl text-white/90 mb-8 max-w-3xl mx-auto leading-relaxed font-light">

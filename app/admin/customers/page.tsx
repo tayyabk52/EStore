@@ -30,7 +30,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { formatPrice, getDefaultCurrency, getCurrencySymbol } from "@/lib/currency"
+import { formatPrice } from "@/lib/currency"
 import Link from "next/link"
 
 // Secret key for admin access

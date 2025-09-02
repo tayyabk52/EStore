@@ -33,7 +33,7 @@ import { SmartImage } from "@/components/ui/smart-image"
 import { ImageUpload } from "@/components/ui/image-upload"
 import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { AdminLayout } from "@/components/admin/admin-layout"
-import { formatPriceRange, getDefaultCurrency, getAllCurrencies, getCurrencySymbol } from "@/lib/currency"
+import { formatPriceRange, getDefaultCurrency, getAllCurrencies } from "@/lib/currency"
 import Link from "next/link"
 import type { Category as FrontCategory } from '@/lib/products-frontend'
 // Local admin type for Collection
@@ -1691,7 +1691,7 @@ function InlineProductForm({
               <div className="text-sm">
                 <p className="text-purple-800 font-medium">AI-Powered Product Details</p>
                 <p className="text-purple-700 mt-1">
-                  Upload an image first, then click &quot;Generate via AI&quot; in the Product Information section to automatically populate product details, descriptions, pricing suggestions, and more based on the image analysis.
+                  Upload an image first, then click "Generate via AI" in the Product Information section to automatically populate product details, descriptions, pricing suggestions, and more based on the image analysis.
                 </p>
               </div>
             </div>

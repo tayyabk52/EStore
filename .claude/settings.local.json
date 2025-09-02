@@ -12,7 +12,8 @@
       "Bash(grep:*)",
       "mcp__ide__getDiagnostics",
       "Bash(node:*)",
-      "Bash(del test-storage.js)"
+      "Bash(del test-storage.js)",
+      "Bash(rg:*)"
     ],
     "deny": [],
     "defaultMode": "acceptEdits"

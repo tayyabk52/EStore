@@ -19,7 +19,7 @@ export default function AccessDenied() {
         {/* Message */}
         <h1 className="text-3xl font-bold text-gray-900 mb-4">Access Denied</h1>
         <p className="text-lg text-gray-600 mb-6">
-          You don&apos;t have permission to access the admin panel.
+          You don't have permission to access the admin panel.
         </p>
         <p className="text-sm text-gray-500 mb-8">
           Please contact your store administrator for the correct access credentials.

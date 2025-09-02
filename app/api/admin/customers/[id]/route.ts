@@ -2,11 +2,11 @@ import { NextRequest, NextResponse } from 'next/server'
 import { customerService, utils } from '@/lib/supabase-admin'
 
 // GET /api/admin/customers/[id]
-export async function GET(req: NextRequest, { params }: { params: { id: string } }) {
+export async function GET(req: NextRequest, context: { params: { id: string } }) {
   if (!utils.validateAdminKey(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    const customer = await customerService.getById(params.id)
+    const customer = await customerService.getById(context.params.id)
     
     // Get additional stats
     const orderCount = await customerService.getOrderCount(customer.userId)
@@ -26,7 +26,7 @@ export async function GET(req: NextRequest, { params }: { params: { id: string }
 }
 
 // PATCH /api/admin/customers/[id]
-export async function PATCH(req: NextRequest, { params }: { params: { id: string } }) {
+export async function PATCH(req: NextRequest, context: { params: { id: string } }) {
   if (!utils.validateAdminKey(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
@@ -41,7 +41,7 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
       phone: updates.phone?.trim() || null,
     }
 
-    const updated = await customerService.update(params.id, updateData)
+    const updated = await customerService.update(context.params.id, updateData)
     return NextResponse.json(updated)
   } catch (e: any) {
     console.error('Error updating customer:', e)
@@ -50,11 +50,11 @@ export async function PATCH(req: NextRequest, { params }: { params: { id: string
 }
 
 // DELETE /api/admin/customers/[id]
-export async function DELETE(req: NextRequest, { params }: { params: { id: string } }) {
+export async function DELETE(req: NextRequest, context: { params: { id: string } }) {
   if (!utils.validateAdminKey(req)) return NextResponse.json({ error: 'Unauthorized' }, { status: 401 })
 
   try {
-    await customerService.delete(params.id)
+    await customerService.delete(context.params.id)
     return NextResponse.json({ success: true })
   } catch (e: any) {
     console.error('Error deleting customer:', e)
