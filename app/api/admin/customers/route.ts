@@ -28,7 +28,7 @@ export async function GET(req: NextRequest) {
         perPage,
         search: q
       })
-    } catch (authError) {
+    } catch (authError: any) {
       console.warn('⚠️ Auth method failed, using fallback:', authError.message)
       result = await customerService.getAllFallback({
         page,
