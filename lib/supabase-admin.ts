@@ -79,6 +79,41 @@ export interface ProductImage {
   updatedAt: string
 }
 
+export interface Customer {
+  id: string
+  userId: string
+  email?: string
+  emailConfirmedAt?: string
+  phone?: string
+  phoneConfirmedAt?: string
+  displayName?: string
+  avatarUrl?: string
+  isAdmin: boolean
+  createdAt: string
+  updatedAt: string
+  lastSignInAt?: string
+  authProvider?: string
+  userMetadata?: any
+}
+
+export interface CustomerAddress {
+  id: string
+  userId: string
+  label?: string
+  fullName: string
+  line1: string
+  line2?: string
+  city: string
+  region?: string
+  postalCode?: string
+  countryCode: string
+  phone?: string
+  isDefaultShip: boolean
+  isDefaultBill: boolean
+  createdAt: string
+  updatedAt: string
+}
+
 // Category operations
 export const categoryService = {
   async getAll() {
@@ -585,5 +620,501 @@ export const utils = {
     const urlKey = req.nextUrl?.searchParams?.get('key')
     
     return headerKey === serverKey || urlKey === serverKey
+  }
+}
+
+// Customer operations
+export const customerService = {
+  // Fallback method - just get from Profile table for now
+  async getAllFallback(options: { 
+    page?: number; 
+    perPage?: number; 
+    search?: string;
+  } = {}) {
+    console.log('🔄 Using fallback customer service (Profile table only)')
+    const { page = 1, perPage = 20, search = '' } = options
+    const from = (page - 1) * perPage
+    const to = from + perPage - 1
+
+    let query = supabaseAdmin
+      .from('Profile')
+      .select('*')
+
+    if (search) {
+      query = query.or(`displayName.ilike.%${search}%,phone.ilike.%${search}%,userId.ilike.%${search}%`)
+    }
+
+    const { data, error } = await query
+      .order('createdAt', { ascending: false })
+      .range(from, to)
+
+    if (error) throw error
+
+    // Get related data for each customer separately
+    const customersWithRelatedData = await Promise.all((data || []).map(async (customer) => {
+      // Get addresses
+      const { data: addresses } = await supabaseAdmin
+        .from('Address')
+        .select('id, label, fullName, line1, line2, city, region, postalCode, countryCode, phone, isDefaultShip, isDefaultBill')
+        .eq('userId', customer.userId)
+
+      // Get orders
+      const { data: orders } = await supabaseAdmin
+        .from('Order')
+        .select('id, number, status, paymentStatus, total, currency, createdAt')
+        .eq('userId', customer.userId)
+
+      // Get carts
+      const { data: carts } = await supabaseAdmin
+        .from('Cart')
+        .select('id, isActive, createdAt')
+        .eq('userId', customer.userId)
+
+      // Get wishlists
+      const { data: wishlists } = await supabaseAdmin
+        .from('Wishlist')
+        .select('id, createdAt')
+        .eq('userId', customer.userId)
+
+      return {
+        ...customer,
+        email: `${customer.displayName || 'user'}@example.com`, // Mock email for display
+        addresses: addresses || [],
+        orders: orders || [],
+        carts: carts || [],
+        wishlists: wishlists || []
+      }
+    }))
+
+    // Get total count separately
+    let countQuery = supabaseAdmin
+      .from('Profile')
+      .select('*', { count: 'exact', head: true })
+
+    if (search) {
+      countQuery = countQuery.or(`displayName.ilike.%${search}%,phone.ilike.%${search}%,userId.ilike.%${search}%`)
+    }
+
+    const { count } = await countQuery
+
+    return {
+      items: customersWithRelatedData,
+      total: count || 0,
+      page,
+      perPage
+    }
+  },
+  async getAll(options: { 
+    page?: number; 
+    perPage?: number; 
+    search?: string;
+  } = {}) {
+    console.log('🔍 CustomerService.getAll called with:', options)
+    const { page = 1, perPage = 20, search = '' } = options
+    const from = (page - 1) * perPage
+    const to = from + perPage - 1
+
+    try {
+      console.log('📞 Calling supabaseAdmin.auth.admin.listUsers...')
+      // First, get all auth users from Supabase Auth
+      const { data: authUsers, error: authError } = await supabaseAdmin.auth.admin.listUsers({
+        page,
+        perPage
+      })
+
+      if (authError) {
+        console.error('❌ Auth error:', authError)
+        throw authError
+      }
+
+      console.log('✅ Got auth users:', {
+        count: authUsers?.users?.length || 0,
+        totalUsers: authUsers?.users?.length || 0
+      })
+
+      // Filter users based on search if provided
+      let filteredUsers = authUsers.users || []
+      console.log('🔍 Before search filter, users count:', filteredUsers.length)
+      
+      if (search) {
+        const searchLower = search.toLowerCase()
+        filteredUsers = filteredUsers.filter(user => 
+          user.email?.toLowerCase().includes(searchLower) ||
+          user.user_metadata?.full_name?.toLowerCase().includes(searchLower) ||
+          user.user_metadata?.display_name?.toLowerCase().includes(searchLower) ||
+          user.phone?.toLowerCase().includes(searchLower) ||
+          user.id.toLowerCase().includes(searchLower)
+        )
+        console.log('🔍 After search filter, users count:', filteredUsers.length)
+      }
+
+      console.log('👥 Processing', filteredUsers.length, 'users...')
+
+      // Get profiles and related data for each auth user
+      const customersWithRelatedData = await Promise.all(filteredUsers.map(async (authUser, index) => {
+        console.log(`👤 Processing user ${index + 1}/${filteredUsers.length}:`, authUser.email)
+        
+        try {
+          // Get profile if exists
+          const { data: profile } = await supabaseAdmin
+            .from('Profile')
+            .select('*')
+            .eq('userId', authUser.id)
+            .single()
+
+          // Get addresses
+          const { data: addresses } = await supabaseAdmin
+            .from('Address')
+            .select('id, label, fullName, line1, line2, city, region, postalCode, countryCode, phone, isDefaultShip, isDefaultBill')
+            .eq('userId', authUser.id)
+
+          // Get orders
+          const { data: orders } = await supabaseAdmin
+            .from('Order')
+            .select('id, number, status, paymentStatus, total, currency, createdAt')
+            .eq('userId', authUser.id)
+
+          // Get carts
+          const { data: carts } = await supabaseAdmin
+            .from('Cart')
+            .select('id, isActive, createdAt')
+            .eq('userId', authUser.id)
+
+          // Get wishlists
+          const { data: wishlists } = await supabaseAdmin
+            .from('Wishlist')
+            .select('id, createdAt')
+            .eq('userId', authUser.id)
+
+          // Combine auth user data with profile data
+          const customerData = {
+            // Use profile id if exists, otherwise use auth user id
+            id: profile?.id || authUser.id,
+            userId: authUser.id,
+            email: authUser.email,
+            emailConfirmedAt: authUser.email_confirmed_at,
+            phone: authUser.phone || profile?.phone,
+            phoneConfirmedAt: authUser.phone_confirmed_at,
+            displayName: profile?.displayName || authUser.user_metadata?.full_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0],
+            avatarUrl: profile?.avatarUrl || authUser.user_metadata?.avatar_url,
+            isAdmin: profile?.isAdmin || false,
+            createdAt: authUser.created_at,
+            updatedAt: authUser.updated_at || profile?.updatedAt,
+            lastSignInAt: authUser.last_sign_in_at,
+            // Related data
+            addresses: addresses || [],
+            orders: orders || [],
+            carts: carts || [],
+            wishlists: wishlists || [],
+            // Auth metadata
+            authProvider: authUser.app_metadata?.provider,
+            userMetadata: authUser.user_metadata
+          }
+          
+          console.log(`✅ Processed user ${index + 1}:`, customerData.email)
+          return customerData
+        } catch (userError) {
+          console.error(`❌ Error processing user ${authUser.email}:`, userError)
+          // Return basic data even if related data fails
+          return {
+            id: authUser.id,
+            userId: authUser.id,
+            email: authUser.email,
+            displayName: authUser.email?.split('@')[0] || 'Unknown',
+            isAdmin: false,
+            createdAt: authUser.created_at,
+            addresses: [],
+            orders: [],
+            carts: [],
+            wishlists: []
+          }
+        }
+      }))
+
+      console.log('✅ Successfully processed all users, returning:', customersWithRelatedData.length, 'customers')
+
+      return {
+        items: customersWithRelatedData,
+        total: filteredUsers.length,
+        page,
+        perPage
+      }
+    } catch (error) {
+      console.error('❌ Error in CustomerService.getAll:', error)
+      throw error
+    }
+  },
+
+  async getById(id: string) {
+    // Try to get auth user by id (assuming id is the auth user id)
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.getUserById(id)
+
+    if (authError || !authUser.user) {
+      // If not found as auth user, try to find by profile id
+      const { data: profile, error: profileError } = await supabaseAdmin
+        .from('Profile')
+        .select('*')
+        .eq('id', id)
+        .single()
+
+      if (profileError) throw new Error('Customer not found')
+
+      // Get auth user by userId from profile
+      const { data: authFromProfile, error: authFromProfileError } = await supabaseAdmin.auth.admin.getUserById(profile.userId)
+      
+      if (authFromProfileError) throw authFromProfileError
+
+      return await this.buildCustomerData(authFromProfile.user, profile)
+    }
+
+    // Get profile if exists
+    const { data: profile } = await supabaseAdmin
+      .from('Profile')
+      .select('*')
+      .eq('userId', authUser.user.id)
+      .single()
+
+    return await this.buildCustomerData(authUser.user, profile)
+  },
+
+  async buildCustomerData(authUser: any, profile: any = null) {
+    // Get related data separately
+    const { data: addresses } = await supabaseAdmin
+      .from('Address')
+      .select('*')
+      .eq('userId', authUser.id)
+
+    const { data: orders } = await supabaseAdmin
+      .from('Order')
+      .select('id, number, status, paymentStatus, total, currency, createdAt, placedAt')
+      .eq('userId', authUser.id)
+
+    const { data: carts } = await supabaseAdmin
+      .from('Cart')
+      .select('id, isActive, createdAt')
+      .eq('userId', authUser.id)
+
+    const { data: wishlists } = await supabaseAdmin
+      .from('Wishlist')
+      .select('id, createdAt')
+      .eq('userId', authUser.id)
+
+    return {
+      // Use profile id if exists, otherwise use auth user id
+      id: profile?.id || authUser.id,
+      userId: authUser.id,
+      email: authUser.email,
+      emailConfirmedAt: authUser.email_confirmed_at,
+      phone: authUser.phone || profile?.phone,
+      phoneConfirmedAt: authUser.phone_confirmed_at,
+      displayName: profile?.displayName || authUser.user_metadata?.full_name || authUser.user_metadata?.display_name || authUser.email?.split('@')[0],
+      avatarUrl: profile?.avatarUrl || authUser.user_metadata?.avatar_url,
+      isAdmin: profile?.isAdmin || false,
+      createdAt: authUser.created_at,
+      updatedAt: authUser.updated_at || profile?.updatedAt,
+      lastSignInAt: authUser.last_sign_in_at,
+      // Related data
+      addresses: addresses || [],
+      orders: orders || [],
+      carts: carts || [],
+      wishlists: wishlists || [],
+      // Auth metadata
+      authProvider: authUser.app_metadata?.provider,
+      userMetadata: authUser.user_metadata
+    }
+  },
+
+  async create(customerData: any) {
+    // Create a new auth user first
+    const { data: authUser, error: authError } = await supabaseAdmin.auth.admin.createUser({
+      email: customerData.email,
+      phone: customerData.phone,
+      password: customerData.password || 'TempPassword123!', // Temporary password
+      user_metadata: {
+        full_name: customerData.displayName,
+        display_name: customerData.displayName
+      },
+      email_confirm: true // Auto-confirm email
+    })
+
+    if (authError) throw authError
+
+    // Create or update profile
+    const profileData = {
+      id: randomUUID(),
+      userId: authUser.user.id,
+      displayName: customerData.displayName,
+      avatarUrl: customerData.avatarUrl,
+      phone: customerData.phone,
+      isAdmin: customerData.isAdmin || false,
+      updatedAt: new Date().toISOString()
+    }
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('Profile')
+      .upsert([profileData])
+      .select()
+      .single()
+
+    if (profileError) throw profileError
+
+    return await this.buildCustomerData(authUser.user, profile)
+  },
+
+  async update(id: string, updates: any) {
+    // Get the customer first to determine if we're updating by profile id or user id
+    const customer = await this.getById(id)
+    
+    // Update auth user if email/phone changed
+    const authUpdates: any = {}
+    if (updates.email && updates.email !== customer.email) {
+      authUpdates.email = updates.email
+    }
+    if (updates.phone && updates.phone !== customer.phone) {
+      authUpdates.phone = updates.phone
+    }
+
+    if (Object.keys(authUpdates).length > 0) {
+      const { error: authError } = await supabaseAdmin.auth.admin.updateUserById(
+        customer.userId,
+        authUpdates
+      )
+      if (authError) throw authError
+    }
+
+    // Update or create profile
+    const profileUpdates = {
+      userId: customer.userId,
+      displayName: updates.displayName,
+      avatarUrl: updates.avatarUrl,
+      phone: updates.phone,
+      isAdmin: updates.isAdmin,
+      updatedAt: new Date().toISOString()
+    }
+
+    // Remove undefined values
+    Object.keys(profileUpdates).forEach(key => 
+      profileUpdates[key] === undefined && delete profileUpdates[key]
+    )
+
+    const { data: profile, error: profileError } = await supabaseAdmin
+      .from('Profile')
+      .upsert([{ id: customer.id, ...profileUpdates }])
+      .select()
+      .single()
+
+    if (profileError) throw profileError
+
+    // Return updated customer data
+    return await this.getById(customer.userId)
+  },
+
+  async delete(id: string) {
+    // Get the customer first to get the userId
+    const customer = await this.getById(id)
+
+    // Delete related records first using the userId
+    await supabaseAdmin
+      .from('Address')
+      .delete()
+      .eq('userId', customer.userId)
+
+    await supabaseAdmin
+      .from('Cart')
+      .delete()
+      .eq('userId', customer.userId)
+
+    await supabaseAdmin
+      .from('Wishlist')
+      .delete()
+      .eq('userId', customer.userId)
+
+    // Delete profile
+    if (customer.id !== customer.userId) {
+      // If we have a separate profile record, delete it
+      await supabaseAdmin
+        .from('Profile')
+        .delete()
+        .eq('id', customer.id)
+    }
+
+    // Delete auth user (this is the main user record)
+    const { error: authError } = await supabaseAdmin.auth.admin.deleteUser(customer.userId)
+    if (authError) throw authError
+
+    return true
+  },
+
+  async getOrderCount(customerId: string) {
+    const { count, error } = await supabaseAdmin
+      .from('Order')
+      .select('*', { count: 'exact', head: true })
+      .eq('userId', customerId)
+
+    if (error) throw error
+    return count || 0
+  },
+
+  async getTotalSpent(customerId: string) {
+    const { data, error } = await supabaseAdmin
+      .from('Order')
+      .select('total')
+      .eq('userId', customerId)
+      .in('status', ['COMPLETED', 'DELIVERED', 'SHIPPED']) // Include various "completed" statuses
+
+    if (error) throw error
+    
+    const totalSpent = (data || []).reduce((sum, order) => sum + Number(order.total || 0), 0)
+    return totalSpent
+  },
+
+  // Helper method to create test customers
+  async createTestData() {
+    console.log('🧪 Creating test customer data...')
+    
+    const testCustomers = [
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        displayName: 'John Doe',
+        phone: '+1234567890',
+        avatarUrl: 'https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?w=150&h=150&fit=crop&crop=face',
+        isAdmin: false,
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        displayName: 'Jane Smith',
+        phone: '+0987654321',
+        avatarUrl: 'https://images.unsplash.com/photo-1494790108755-2616b04a35ef?w=150&h=150&fit=crop&crop=face',
+        isAdmin: false,
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        displayName: 'Admin User',
+        phone: '+1122334455',
+        avatarUrl: 'https://images.unsplash.com/photo-1507003211169-0a1dd7228f2d?w=150&h=150&fit=crop&crop=face',
+        isAdmin: true,
+        updatedAt: new Date().toISOString()
+      }
+    ]
+
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('Profile')
+        .insert(testCustomers)
+        .select()
+
+      if (error) throw error
+      
+      console.log('✅ Created test customers:', data.length)
+      return data
+    } catch (error) {
+      console.error('❌ Error creating test data:', error)
+      throw error
+    }
   }
 }

@@ -70,9 +70,9 @@ export const SUPPORTED_CURRENCIES: Record<string, CurrencyConfig> = {
   },
 }
 
-// Get default currency from environment or fallback to USD
+// Get default currency from environment or fallback to PKR
 export const getDefaultCurrency = (): string => {
-  return process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'USD'
+  return process.env.NEXT_PUBLIC_DEFAULT_CURRENCY || 'PKR'
 }
 
 // Get currency configuration
