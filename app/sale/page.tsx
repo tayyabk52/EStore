@@ -1,6 +1,10 @@
 import { productsFrontendService } from "@/lib/products-frontend"
 import ProductsListClient from "@/components/product/ProductsListClient"
 
+// Force dynamic rendering to avoid stale cache
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function SalePage() {
   const saleProducts = await productsFrontendService.getOnSaleProducts(50)
 

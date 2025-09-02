@@ -3,6 +3,10 @@ import { notFound } from 'next/navigation'
 import Link from 'next/link'
 import ProductsListClient from '@/components/product/ProductsListClient'
 
+// Force dynamic rendering to avoid stale cache
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 type Props = { searchParams: Promise<{ cat?: string }> }
 
 export default async function ProductsPage({ searchParams }: Props) {

@@ -3,6 +3,10 @@ import { Button } from "@/components/ui/button"
 import { collectionsService } from "@/lib/products-frontend"
 import { Crown } from "lucide-react"
 
+// Force dynamic rendering to avoid stale cache
+export const dynamic = 'force-dynamic'
+export const revalidate = 0
+
 export default async function CollectionsPage() {
   const collections = await collectionsService.getAllCollections()
 
