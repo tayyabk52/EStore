@@ -27,7 +27,7 @@ import { isValidImageUrl, getImageSourceType } from "@/lib/image-utils"
 import { SmartImage } from "@/components/ui/smart-image"
 
 // Secret key for admin access
-const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || "evelon2024"
 
 interface Collection {
   id: string
@@ -217,6 +217,14 @@ export default function CollectionsAdmin() {
     } catch (error) {
       console.error('Error deleting collection:', error)
       toast.error('Failed to delete collection')
+    }
+  }
+
+  const formatDate = (isoDate: string) => {
+    try {
+      return new Date(isoDate).toISOString().slice(0, 10)
+    } catch {
+      return isoDate
     }
   }
 
@@ -519,7 +527,7 @@ export default function CollectionsAdmin() {
                           </div>
                         </td>
                         <td className="px-6 py-4 text-sm text-gray-600">
-                          {new Date(collection.createdAt).toLocaleDateString()}
+                          {formatDate(collection.createdAt)}
                         </td>
                         <td className="px-6 py-4 text-right">
                           <div className="flex justify-end space-x-2">

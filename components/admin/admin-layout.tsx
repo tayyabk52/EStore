@@ -43,7 +43,7 @@ interface AdminLayoutProps {
   subtitle?: string
 }
 
-const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || "evelon2024"
 
 const navigationItems = [
   {

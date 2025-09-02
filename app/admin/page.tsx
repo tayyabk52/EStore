@@ -33,7 +33,7 @@ import { formatPrice } from "@/lib/currency"
 import Link from "next/link"
 
 // Secret key for admin access
-const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || "evelon2024"
 
 interface DashboardStats {
   totalProducts: number

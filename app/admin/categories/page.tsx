@@ -19,7 +19,7 @@ import { AdminLayout } from "@/components/admin/admin-layout"
 import Link from "next/link"
 
 // Secret key for admin access
-const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || "evelon2024"
 
 interface Category {
   id: string
@@ -46,6 +46,11 @@ export default function CategoriesManagement() {
   const [categories, setCategories] = useState<Category[]>([])
   const [editingCategory, setEditingCategory] = useState<Category | null>(null)
   const [showAddForm, setShowAddForm] = useState(false)
+  const [loading, setLoading] = useState({
+    initial: false,
+    saving: false,
+    deleting: ''
+  })
 
   // Check authentication on component mount
   useEffect(() => {
@@ -69,6 +74,7 @@ export default function CategoriesManagement() {
   // Load categories from API
   useEffect(() => {
     const fetchCategories = async () => {
+      setLoading(prev => ({ ...prev, initial: true }))
       try {
         const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
         const res = await fetch('/api/admin/categories', {
@@ -80,6 +86,8 @@ export default function CategoriesManagement() {
         }
       } catch (e) {
         console.error('Error fetching categories:', e)
+      } finally {
+        setLoading(prev => ({ ...prev, initial: false }))
       }
     }
     
@@ -118,6 +126,7 @@ export default function CategoriesManagement() {
 
   // Handle category save
   const handleSave = async (categoryData: any) => {
+    setLoading(prev => ({ ...prev, saving: true }))
     try {
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
       
@@ -158,6 +167,8 @@ export default function CategoriesManagement() {
     } catch (e: any) {
       console.error('Save error:', e)
       alert(`Save failed: ${e.message}`)
+    } finally {
+      setLoading(prev => ({ ...prev, saving: false }))
     }
   }
 
@@ -165,6 +176,7 @@ export default function CategoriesManagement() {
   const handleDelete = async (categoryId: string) => {
     if (!confirm('Delete this category? This action cannot be undone.')) return
     
+    setLoading(prev => ({ ...prev, deleting: categoryId }))
     try {
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
       const res = await fetch(`/api/admin/categories/${categoryId}`, { 
@@ -187,6 +199,8 @@ export default function CategoriesManagement() {
     } catch (e: any) {
       console.error('Delete error:', e)
       alert(`Delete failed: ${e.message}`)
+    } finally {
+      setLoading(prev => ({ ...prev, deleting: '' }))
     }
   }
 
@@ -206,6 +220,16 @@ export default function CategoriesManagement() {
 
   return (
     <AdminLayout title="Category Management" subtitle="Organize your products into categories">
+      {/* Loading Overlay for Initial Load */}
+      {loading.initial && (
+        <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-40">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-purple-600 border-t-transparent"></div>
+            <p className="text-gray-600 font-medium">Loading categories...</p>
+          </div>
+        </div>
+      )}
+
       {/* Header Actions */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-3">
@@ -216,7 +240,11 @@ export default function CategoriesManagement() {
           </div>
         </div>
         
-        <Button onClick={() => setShowAddForm(true)} className="bg-purple-600 hover:bg-purple-700">
+        <Button 
+          onClick={() => setShowAddForm(true)} 
+          className="bg-purple-600 hover:bg-purple-700"
+          disabled={loading.saving}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Category
         </Button>
@@ -262,6 +290,7 @@ export default function CategoriesManagement() {
                       setShowAddForm(true)
                     }}
                     onDelete={handleDelete}
+                    deletingId={loading.deleting}
                   />
                 ))}
               </div>
@@ -299,6 +328,7 @@ export default function CategoriesManagement() {
                     setShowAddForm(false)
                     setEditingCategory(null)
                   }}
+                  isLoading={loading.saving}
                 />
               </div>
             </div>
@@ -313,13 +343,16 @@ function CategoryRow({
   category, 
   level, 
   onEdit, 
-  onDelete 
+  onDelete,
+  deletingId = ''
 }: { 
   category: Category
   level: number
   onEdit: (category: Category) => void
   onDelete: (id: string) => void
+  deletingId?: string
 }) {
+  const isDeleting = deletingId === category.id
   const [isExpanded, setIsExpanded] = useState(true)
   
   return (
@@ -381,7 +414,12 @@ function CategoryRow({
         
         {/* Actions */}
         <div className="flex space-x-2">
-          <Button size="sm" variant="outline" onClick={() => onEdit(category)}>
+          <Button 
+            size="sm" 
+            variant="outline" 
+            onClick={() => onEdit(category)}
+            disabled={isDeleting}
+          >
             <Edit className="w-3 h-3 mr-1" />
             Edit
           </Button>
@@ -390,8 +428,13 @@ function CategoryRow({
             variant="outline" 
             className="text-red-600 hover:text-red-700"
             onClick={() => onDelete(category.id)}
+            disabled={isDeleting}
           >
-            <Trash2 className="w-3 h-3" />
+            {isDeleting ? (
+              <div className="animate-spin rounded-full h-3 w-3 border-2 border-red-600 border-t-transparent" />
+            ) : (
+              <Trash2 className="w-3 h-3" />
+            )}
           </Button>
         </div>
       </div>
@@ -408,6 +451,7 @@ function CategoryRow({
                 level={level + 1}
                 onEdit={onEdit}
                 onDelete={onDelete}
+                deletingId={deletingId}
               />
             ))}
         </div>
@@ -421,12 +465,14 @@ function CategoryForm({
   category, 
   categories, 
   onSave, 
-  onCancel 
+  onCancel,
+  isLoading = false
 }: { 
   category: Category | null
   categories: Category[]
   onSave: (data: any) => void
   onCancel: () => void
+  isLoading?: boolean
 }) {
   function InfoTip({ text }: { text: string }) {
     return (
@@ -655,12 +701,28 @@ function CategoryForm({
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-            <Save className="w-4 h-4 mr-2" />
-            {category ? 'Update Category' : 'Create Category'}
+          <Button 
+            type="submit" 
+            className="bg-purple-600 hover:bg-purple-700"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isLoading 
+              ? (category ? 'Updating...' : 'Creating...') 
+              : (category ? 'Update Category' : 'Create Category')
+            }
           </Button>
         </div>
       </form>

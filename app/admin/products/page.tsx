@@ -1,6 +1,6 @@
 "use client"
 
-import { useState, useEffect } from "react"
+import { useState, useEffect, useId } from "react"
 import { motion } from "framer-motion"
 import { 
   Plus, 
@@ -30,6 +30,7 @@ import {
 } from "lucide-react"
 import { Button } from "@/components/ui/button"
 import { SmartImage } from "@/components/ui/smart-image"
+import { ImageUpload } from "@/components/ui/image-upload"
 import { FALLBACK_IMAGES } from "@/lib/image-utils"
 import { AdminLayout } from "@/components/admin/admin-layout"
 import { formatPriceRange, getDefaultCurrency, getAllCurrencies, getCurrencySymbol } from "@/lib/currency"
@@ -39,7 +40,7 @@ import type { Category as FrontCategory } from '@/lib/products-frontend'
 interface AdminCollection { id: string; name: string; slug: string }
 
 // Secret key for admin access
-const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || ""
+const ADMIN_SECRET_KEY = process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY || "evelon2024"
 
 interface Product {
   id: string
@@ -107,6 +108,12 @@ export default function ProductsManagement() {
   const [searchTerm, setSearchTerm] = useState("")
   const [viewMode, setViewMode] = useState<'grid' | 'list'>('grid')
   const [selectedCategory, setSelectedCategory] = useState<string>('')
+  const [loading, setLoading] = useState({
+    initial: false,
+    saving: false,
+    deleting: '',
+    fetching: ''
+  })
 
   // Build a breadcrumb-like path for categories to avoid ambiguity (e.g., "Men's Clothing / Shirts / Tees")
   const categoryIdToCategory = new Map<string, (Category & { parentId?: string }) | FrontCategory>()
@@ -148,6 +155,7 @@ export default function ProductsManagement() {
   // Load products and categories
   useEffect(() => {
     const fetchData = async () => {
+      setLoading(prev => ({ ...prev, initial: true }))
       try {
         const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
         
@@ -179,6 +187,8 @@ export default function ProductsManagement() {
         }
       } catch (e) {
         console.error('Error fetching data:', e)
+      } finally {
+        setLoading(prev => ({ ...prev, initial: false }))
       }
     }
     
@@ -198,6 +208,7 @@ export default function ProductsManagement() {
 
   // Handle product edit
   const handleEdit = async (product: Product) => {
+    setLoading(prev => ({ ...prev, fetching: product.id }))
     try {
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
       const res = await fetch(`/api/admin/products/${product.id}`, {
@@ -212,6 +223,7 @@ export default function ProductsManagement() {
     } catch {
       setEditingProduct({ ...product })
     } finally {
+      setLoading(prev => ({ ...prev, fetching: '' }))
       setShowAddForm(true)
     }
   }
@@ -223,6 +235,7 @@ export default function ProductsManagement() {
 
   // Handle product save
   const handleSave = async (productData: any) => {
+    setLoading(prev => ({ ...prev, saving: true }))
     try {
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
       
@@ -263,12 +276,15 @@ export default function ProductsManagement() {
     } catch (e: any) {
       console.error('Save error:', e)
       alert(`Save failed: ${e.message}`)
+    } finally {
+      setLoading(prev => ({ ...prev, saving: false }))
     }
   }
 
   // Handle product delete
   const handleDelete = async (productId: string) => {
     if (!confirm('Delete this product? This action cannot be undone.')) return
+    setLoading(prev => ({ ...prev, deleting: productId }))
     try {
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
       const res = await fetch(`/api/admin/products/${productId}`, { 
@@ -283,9 +299,12 @@ export default function ProductsManagement() {
       })
       const refreshedData = await refreshed.json()
       setProducts(refreshedData.items || refreshedData)
+      alert('Product deleted successfully!')
     } catch (e) {
       console.error(e)
       alert('Delete failed')
+    } finally {
+      setLoading(prev => ({ ...prev, deleting: '' }))
     }
   }
 
@@ -305,6 +324,16 @@ export default function ProductsManagement() {
 
   return (
     <AdminLayout title="Product Management" subtitle="Manage your store's products and inventory">
+      {/* Loading Overlay for Initial Load */}
+      {loading.initial && (
+        <div className="fixed inset-0 bg-white bg-opacity-75 flex items-center justify-center z-40">
+          <div className="flex flex-col items-center space-y-4">
+            <div className="animate-spin rounded-full h-12 w-12 border-4 border-blue-600 border-t-transparent"></div>
+            <p className="text-gray-600 font-medium">Loading products...</p>
+          </div>
+        </div>
+      )}
+
       {/* Header Actions */}
       <div className="flex justify-between items-center mb-8">
         <div className="flex items-center space-x-3">
@@ -315,7 +344,11 @@ export default function ProductsManagement() {
           </div>
         </div>
         
-        <Button onClick={() => setShowAddForm(true)} className="bg-blue-600 hover:bg-blue-700">
+        <Button 
+          onClick={() => setShowAddForm(true)} 
+          className="bg-blue-600 hover:bg-blue-700"
+          disabled={loading.saving}
+        >
           <Plus className="w-4 h-4 mr-2" />
           Add Product
         </Button>
@@ -474,15 +507,21 @@ export default function ProductsManagement() {
                         variant="outline" 
                         className="flex-1"
                         onClick={() => handleEdit(product)}
+                        disabled={loading.fetching === product.id || loading.deleting === product.id}
                       >
-                        <Edit className="w-3 h-3 mr-1" />
-                        Edit
+                        {loading.fetching === product.id ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent mr-1" />
+                        ) : (
+                          <Edit className="w-3 h-3 mr-1" />
+                        )}
+                        {loading.fetching === product.id ? 'Loading...' : 'Edit'}
                       </Button>
                       <Button 
                         size="sm" 
                         variant="outline" 
                         className="flex-1"
                         onClick={() => handleView(product)}
+                        disabled={loading.fetching === product.id || loading.deleting === product.id}
                       >
                         <Eye className="w-3 h-3 mr-1" />
                         View
@@ -492,8 +531,13 @@ export default function ProductsManagement() {
                         variant="outline" 
                         className="text-red-600 hover:text-red-700"
                         onClick={() => handleDelete(product.id)}
+                        disabled={loading.deleting === product.id || loading.fetching === product.id}
                       >
-                        <Trash2 className="w-3 h-3" />
+                        {loading.deleting === product.id ? (
+                          <div className="animate-spin rounded-full h-3 w-3 border-2 border-red-600 border-t-transparent" />
+                        ) : (
+                          <Trash2 className="w-3 h-3" />
+                        )}
                       </Button>
                     </div>
                   </div>
@@ -575,16 +619,40 @@ export default function ProductsManagement() {
                         </td>
                         <td className="px-6 py-4 whitespace-nowrap text-sm font-medium">
                           <div className="flex space-x-2">
-                            <Button size="sm" variant="outline" onClick={() => handleEdit(product)}>
-                              <Edit className="w-3 h-3 mr-1" />
-                              Edit
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              onClick={() => handleEdit(product)}
+                              disabled={loading.fetching === product.id || loading.deleting === product.id}
+                            >
+                              {loading.fetching === product.id ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-blue-600 border-t-transparent mr-1" />
+                              ) : (
+                                <Edit className="w-3 h-3 mr-1" />
+                              )}
+                              {loading.fetching === product.id ? 'Loading...' : 'Edit'}
                             </Button>
-                            <Button size="sm" variant="outline">
+                            <Button 
+                              size="sm" 
+                              variant="outline"
+                              onClick={() => handleView(product)}
+                              disabled={loading.fetching === product.id || loading.deleting === product.id}
+                            >
                               <Eye className="w-3 h-3 mr-1" />
                               View
                             </Button>
-                            <Button size="sm" variant="outline" className="text-red-600 hover:text-red-700" onClick={() => handleDelete(product.id)}>
-                              <Trash2 className="w-3 h-3" />
+                            <Button 
+                              size="sm" 
+                              variant="outline" 
+                              className="text-red-600 hover:text-red-700" 
+                              onClick={() => handleDelete(product.id)}
+                              disabled={loading.deleting === product.id || loading.fetching === product.id}
+                            >
+                              {loading.deleting === product.id ? (
+                                <div className="animate-spin rounded-full h-3 w-3 border-2 border-red-600 border-t-transparent" />
+                              ) : (
+                                <Trash2 className="w-3 h-3" />
+                              )}
                             </Button>
                           </div>
                         </td>
@@ -619,7 +687,7 @@ export default function ProductsManagement() {
               </div>
 
               <div className="p-6">
-                <ProductForm
+                <InlineProductForm
                   product={editingProduct}
                   categories={categories}
                   collections={collections}
@@ -628,6 +696,7 @@ export default function ProductsManagement() {
                     setShowAddForm(false)
                     setEditingProduct(null)
                   }}
+                  isLoading={loading.saving}
                 />
               </div>
             </div>
@@ -644,18 +713,20 @@ export default function ProductsManagement() {
 }
 
 // Simplified Product Form - Schema-Aligned
-function ProductForm({ 
+function InlineProductForm({ 
   product, 
   categories, 
   collections,
   onSave, 
-  onCancel 
+  onCancel,
+  isLoading = false
 }: { 
   product: Product | null
   categories: Category[]
   collections: { id: string; name: string; slug: string }[]
   onSave: (data: any) => void
   onCancel: () => void
+  isLoading?: boolean
 }) {
   function InfoTip({ text }: { text: string }) {
     return (
@@ -670,6 +741,7 @@ function ProductForm({
   const [detailsText, setDetailsText] = useState(
     JSON.stringify(((product as any)?.details ?? {}), null, 2)
   )
+  const newProductId = useId()
   // Collections state
   const [selectedCollections, setSelectedCollections] = useState<string[]>(
     (product as any)?.collectionIds || []
@@ -770,6 +842,9 @@ function ProductForm({
           }
         ]
   )
+
+  // AI Generation State
+  const [isAIGenerating, setIsAIGenerating] = useState(false)
 
   // Sync when switching between products to edit
   useEffect(() => {
@@ -875,6 +950,162 @@ function ProductForm({
     setFormData(prev => ({ ...prev, [field]: value }))
   }
 
+  // AI Generation Function
+  const handleAIGenerate = async () => {
+    const mainImageUrl = images.find(img => img.isPrimary)?.url || images[0]?.url
+    if (!mainImageUrl) {
+      alert('Please upload a main image first to generate product details with AI.')
+      return
+    }
+
+    console.log('AI Generate called with image:', mainImageUrl)
+    setIsAIGenerating(true)
+    
+    try {
+      const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || ADMIN_SECRET_KEY
+      console.log('Using admin key:', !!adminKey)
+      
+      const response = await fetch('/api/admin/ai-generate', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+          'x-admin-key': adminKey
+        },
+        body: JSON.stringify({ 
+          imageUrl: mainImageUrl,
+          context: { 
+            title: formData.title, 
+            brand: formData.brand,
+            categoryId: formData.categoryId 
+          }
+        })
+      })
+
+      console.log('AI Response status:', response.status)
+      
+      if (!response.ok) {
+        const errorText = await response.text()
+        console.log('AI Error response:', errorText)
+        
+        let errorData
+        try {
+          errorData = JSON.parse(errorText)
+        } catch {
+          errorData = { error: errorText }
+        }
+        
+        if (response.status === 429 || (errorData.details && errorData.details.includes('429'))) {
+          throw new Error('API quota exceeded. Please wait a few minutes and try again, or consider upgrading your Gemini API plan.')
+        } else if (response.status === 401) {
+          throw new Error('API authentication failed. Please check your Gemini API key.')
+        } else {
+          throw new Error(errorData.error || 'AI generation failed')
+        }
+      }
+
+      const aiData = await response.json()
+      
+      // Update form data with AI generated content
+      setFormData(prev => ({
+        ...prev,
+        title: aiData.name || prev.title,
+        description: aiData.description || prev.description,
+        shortDescription: aiData.shortDescription || prev.shortDescription,
+        brand: aiData.brand || prev.brand,
+        categoryId: aiData.category || prev.categoryId,
+        metaTitle: aiData.metaTitle || prev.metaTitle,
+        metaDescription: aiData.metaDescription || prev.metaDescription,
+        metaKeywords: aiData.metaKeywords || prev.metaKeywords,
+        isActive: typeof aiData.isActive === 'boolean' ? aiData.isActive : prev.isActive,
+        isFeatured: typeof aiData.isFeatured === 'boolean' ? aiData.isFeatured : prev.isFeatured,
+        isNewArrival: typeof aiData.isNewArrival === 'boolean' ? aiData.isNewArrival : prev.isNewArrival,
+        isBestseller: typeof aiData.isBestseller === 'boolean' ? aiData.isBestseller : prev.isBestseller,
+        isOnSale: typeof aiData.isOnSale === 'boolean' ? aiData.isOnSale : prev.isOnSale
+      }))
+
+      // Update variants with AI data
+      if (aiData.price || aiData.sku || aiData.stock) {
+        setVariants(prev => {
+          const updated = [...prev]
+          if (updated[0]) {
+            updated[0] = {
+              ...updated[0],
+              price: aiData.price || updated[0].price,
+              sku: aiData.sku || updated[0].sku,
+              stock: aiData.stock || updated[0].stock,
+              weightGrams: aiData.weight ? aiData.weight * 1000 : updated[0].weightGrams,
+              barcode: aiData.barcode || updated[0].barcode
+            }
+          }
+          return updated
+        })
+      }
+
+      // Update images with AI data
+      if (Array.isArray(aiData.images) && aiData.images.length > 0) {
+        setImages(() => {
+          const aiImages = aiData.images.map((url: string, index: number) => ({
+            url,
+            alt: aiData.name || `Product image ${index + 1}`,
+            isPrimary: index === 0,
+            sortOrder: index
+          }))
+          return aiImages
+        })
+      }
+
+      alert('AI has successfully generated product details! Please review and modify as needed before saving.')
+      
+    } catch (error) {
+      console.error('AI generation error:', error)
+      
+      // Check if it's a quota error and offer fallback
+      if (error instanceof Error && error.message.includes('quota exceeded')) {
+        const useBasicGeneration = confirm(
+          'AI quota exceeded. Would you like to use basic auto-generation instead? ' +
+          'This will create basic product fields based on the image filename and common patterns.'
+        )
+        
+        if (useBasicGeneration) {
+          // Basic fallback generation
+          const imageName = images.find(img => img.isPrimary)?.url?.split('/').pop()?.split('.')[0] || 'product'
+          const basicName = imageName.replace(/[-_]/g, ' ').replace(/\b\w/g, l => l.toUpperCase())
+          
+          setFormData(prev => ({
+            ...prev,
+            title: prev.title || basicName,
+            description: prev.description || `High-quality ${basicName.toLowerCase()} with excellent craftsmanship and attention to detail.`,
+            shortDescription: prev.shortDescription || `Premium ${basicName.toLowerCase()} for discerning customers.`,
+            metaTitle: prev.metaTitle || `${basicName} | Premium Quality`,
+            metaDescription: prev.metaDescription || `Shop premium ${basicName.toLowerCase()} with fast shipping and excellent customer service.`,
+            isActive: true,
+            isNewArrival: true
+          }))
+          
+          // Update first variant with basic data
+          setVariants(prev => {
+            const updated = [...prev]
+            if (updated[0]) {
+              updated[0] = {
+                ...updated[0],
+                price: updated[0].price || 50,
+                sku: updated[0].sku || `SKU-${Date.now()}`,
+                stock: updated[0].stock || 10
+              }
+            }
+            return updated
+          })
+          
+          alert('Basic product details generated! Please review and customize as needed.')
+        }
+      } else {
+        alert(`Failed to generate product details: ${error instanceof Error ? error.message : 'Unknown error'}`)
+      }
+    } finally {
+      setIsAIGenerating(false)
+    }
+  }
+
   const addVariant = () => {
     setVariants([...variants, {
       sku: '',
@@ -943,10 +1174,22 @@ function ProductForm({
       <form onSubmit={handleSubmit} className="space-y-8">
         {/* 1. PRODUCT BASIC INFO */}
         <div className="bg-white rounded-lg shadow-sm border border-gray-200 p-6">
-          <h3 className="text-lg font-semibold text-gray-900 mb-6 flex items-center">
-            <Package className="w-5 h-5 mr-2 text-blue-600" />
-            1. Product Information
-          </h3>
+          <div className="flex items-center justify-between mb-6">
+            <h3 className="text-lg font-semibold text-gray-900 flex items-center">
+              <Package className="w-5 h-5 mr-2 text-blue-600" />
+              1. Product Information
+            </h3>
+            <Button
+              type="button"
+              onClick={handleAIGenerate}
+              disabled={isAIGenerating || (!images.find(img => img.isPrimary)?.url && !images[0]?.url)}
+              className="bg-gradient-to-r from-purple-600 to-blue-600 hover:from-purple-700 hover:to-blue-700 text-white"
+              size="sm"
+            >
+              <Star className="w-4 h-4 mr-2" />
+              {isAIGenerating ? 'Generating...' : 'Generate via AI'}
+            </Button>
+          </div>
           
           <div className="grid grid-cols-1 md:grid-cols-2 gap-6">
             <div>
@@ -1441,7 +1684,20 @@ function ProductForm({
             </Button>
           </div>
           
-          <div className="space-y-4">
+          {/* AI Generation Hint */}
+          <div className="mb-6 p-3 bg-gradient-to-r from-purple-50 to-blue-50 border border-purple-200 rounded-lg">
+            <div className="flex items-start space-x-2">
+              <Star className="w-4 h-4 text-purple-600 mt-0.5 flex-shrink-0" />
+              <div className="text-sm">
+                <p className="text-purple-800 font-medium">AI-Powered Product Details</p>
+                <p className="text-purple-700 mt-1">
+                  Upload an image first, then click &quot;Generate via AI&quot; in the Product Information section to automatically populate product details, descriptions, pricing suggestions, and more based on the image analysis.
+                </p>
+              </div>
+            </div>
+          </div>
+          
+          <div className="space-y-6">
             {images.map((image, index) => (
               <div key={index} className="bg-gray-50 rounded-lg p-4">
                 <div className="flex items-center justify-between mb-4">
@@ -1462,50 +1718,18 @@ function ProductForm({
                   </div>
                 </div>
                 
-                <div className="grid grid-cols-1 md:grid-cols-2 gap-4">
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Image URL *
-                      <InfoTip text={"Link to image. Example: https://site.com/img.jpg"} />
-                    </label>
-                    <input
-                      type="url"
-                      required
-                      value={image.url}
-                      onChange={(e) => updateImage(index, 'url', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="https://example.com/image.jpg"
-                    />
-                  </div>
-                  
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Alt Text
-                      <InfoTip text={"Text for screen reader. Example: Black jacket front view"} />
-                    </label>
-                    <input
-                      type="text"
-                      value={image.alt}
-                      onChange={(e) => updateImage(index, 'alt', e.target.value)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="Product image description"
-                    />
-                  </div>
-                  <div>
-                    <label className="block text-sm font-medium text-gray-700 mb-2">
-                      Sort Order
-                      <InfoTip text={"Number for order images. Example: 0,1,2"} />
-                    </label>
-                    <input
-                      type="number"
-                      min="0"
-                      value={image.sortOrder}
-                      onChange={(e) => updateImage(index, 'sortOrder', parseInt(e.target.value) || 0)}
-                      className="w-full px-3 py-2 border border-gray-300 rounded-lg focus:ring-2 focus:ring-blue-500 focus:border-transparent"
-                      placeholder="0"
-                    />
-                  </div>
-                </div>
+                <ImageUpload
+                  value={image.url}
+                  onChange={(url: string) => updateImage(index, 'url', url)}
+                  onDelete={() => removeImage(index)}
+                  productId={product?.id || `new-${newProductId}`}
+                  alt={image.alt}
+                  onAltChange={(alt: string) => updateImage(index, 'alt', alt)}
+                  isPrimary={image.isPrimary}
+                  onPrimaryChange={() => setPrimaryImage(index)}
+                  sortOrder={image.sortOrder}
+                  onSortOrderChange={(sortOrder: number) => updateImage(index, 'sortOrder', sortOrder)}
+                />
               </div>
             ))}
           </div>
@@ -1513,12 +1737,28 @@ function ProductForm({
 
         {/* Form Actions */}
         <div className="flex justify-end space-x-3 pt-6 border-t border-gray-200">
-          <Button type="button" variant="outline" onClick={onCancel}>
+          <Button 
+            type="button" 
+            variant="outline" 
+            onClick={onCancel}
+            disabled={isLoading}
+          >
             Cancel
           </Button>
-          <Button type="submit" className="bg-blue-600 hover:bg-blue-700">
-            <Save className="w-4 h-4 mr-2" />
-            {product ? 'Update Product' : 'Create Product'}
+          <Button 
+            type="submit" 
+            className="bg-blue-600 hover:bg-blue-700"
+            disabled={isLoading}
+          >
+            {isLoading ? (
+              <div className="animate-spin rounded-full h-4 w-4 border-2 border-white border-t-transparent mr-2" />
+            ) : (
+              <Save className="w-4 h-4 mr-2" />
+            )}
+            {isLoading 
+              ? (product ? 'Updating...' : 'Creating...') 
+              : (product ? 'Update Product' : 'Create Product')
+            }
           </Button>
         </div>
       </form>

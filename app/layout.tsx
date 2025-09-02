@@ -43,7 +43,7 @@ export default function RootLayout({
   children: React.ReactNode;
 }>) {
   return (
-    <html lang="en" className="overflow-x-hidden">
+    <html lang="en" className="overflow-x-hidden" suppressHydrationWarning>
       <head>
         {/* DNS Prefetch for external resources */}
         <link rel="dns-prefetch" href="//fonts.googleapis.com" />
