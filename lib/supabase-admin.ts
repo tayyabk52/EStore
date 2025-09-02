@@ -994,7 +994,7 @@ export const customerService = {
 
     // Remove undefined values
     Object.keys(profileUpdates).forEach(key => 
-      profileUpdates[key] === undefined && delete profileUpdates[key]
+      (profileUpdates as any)[key] === undefined && delete (profileUpdates as any)[key]
     )
 
     const { data: profile, error: profileError } = await supabaseAdmin
