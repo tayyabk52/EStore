@@ -10,6 +10,7 @@ interface ImageUploadProps {
   onChange: (url: string) => void
   onDelete?: () => void
   productId?: string
+  categorySlug?: string
   alt?: string
   onAltChange?: (alt: string) => void
   isPrimary?: boolean
@@ -26,6 +27,7 @@ export function ImageUpload({
   onChange,
   onDelete,
   productId,
+  categorySlug,
   alt = '',
   onAltChange,
   isPrimary = false,
@@ -59,6 +61,9 @@ export function ImageUpload({
       formData.append('productId', productId)
       formData.append('fileName', file.name)
       formData.append('storageType', storageType)
+      if (categorySlug) {
+        formData.append('categorySlug', categorySlug)
+      }
 
       const adminKey = window.sessionStorage.getItem('ADMIN_KEY') || process.env.NEXT_PUBLIC_ADMIN_SECRET_KEY
 

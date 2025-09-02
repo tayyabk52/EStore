@@ -86,6 +86,11 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
     .find(cat => cat.id === formData.category)
     ?.subcategories || []
 
+  // Get selected category slug for storage organization
+  const selectedCategorySlug = categories
+    .find(cat => cat.id === formData.category)
+    ?.slug
+
   // Validation
   const validateForm = () => {
     const newErrors: any = {}
@@ -739,6 +744,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
               onChange={(url) => handleChange('mainImage', url)}
               onDelete={() => handleChange('mainImage', '')}
               productId={product?.id || 'temp-' + Date.now()}
+              categorySlug={selectedCategorySlug}
               alt="Main product image"
               isPrimary={true}
               className="max-w-md"
@@ -816,6 +822,7 @@ export default function ProductForm({ product, categories, onSave, onCancel }: P
                       handleChange('images', newImages)
                     }}
                     productId={product?.id || 'temp-' + Date.now()}
+                    categorySlug={selectedCategorySlug}
                     alt={`Product image ${index + 1}`}
                     sortOrder={index}
                     className="max-w-md"

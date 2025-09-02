@@ -30,10 +30,10 @@ export class StorageService {
   private bucketName = 'product-images'
 
   /**
-   * Upload an image file to Supabase storage
+   * Upload an image file to Supabase storage with improved folder structure
    * Note: This method should only be called from server-side code
    */
-  async uploadImage(file: File, productId: string, fileName?: string): Promise<UploadResult> {
+  async uploadImage(file: File, productId: string, fileName?: string, categorySlug?: string): Promise<UploadResult> {
     try {
       // This method should only run on server-side
       if (typeof window !== 'undefined') {
@@ -44,7 +44,11 @@ export class StorageService {
       const timestamp = Date.now()
       const fileExtension = file.name.split('.').pop()
       const uniqueFileName = fileName || `${productId}-${timestamp}.${fileExtension}`
-      const filePath = `${productId}/${uniqueFileName}`
+      
+      // Improved folder structure: category/products/productId/filename
+      // If no category, fallback to products/productId/filename
+      const folderPath = categorySlug ? `categories/${categorySlug}/products/${productId}` : `products/${productId}`
+      const filePath = `${folderPath}/${uniqueFileName}`
 
       // Upload file to storage using admin client
       const supabaseAdmin = createAdminClient()
@@ -76,6 +80,86 @@ export class StorageService {
   }
 
   /**
+   * Delete all images for a product from storage
+   * Note: This method should only be called from server-side code
+   */
+  async deleteProductImages(productId: string, categorySlug?: string): Promise<{ success: boolean; error?: string }> {
+    try {
+      if (typeof window !== 'undefined') {
+        return { success: false, error: 'Delete must be done server-side' }
+      }
+
+      const supabaseAdmin = createAdminClient()
+      
+      console.log(`🗑️ Starting storage deletion for product ${productId}, category: ${categorySlug || 'none'}`)
+      
+      // Try multiple folder structures for backward compatibility
+      const folderPaths = [
+        categorySlug ? `categories/${categorySlug}/products/${productId}` : null,
+        `products/${productId}`,
+        productId // Old structure for backward compatibility
+      ].filter(Boolean) as string[]
+
+      let deletedAny = false
+      let lastError: string | null = null
+      let totalDeleted = 0
+
+      for (const folderPath of folderPaths) {
+        try {
+          console.log(`🔍 Checking folder: ${folderPath}`)
+          
+          // List all files in the folder
+          const { data: files, error: listError } = await supabaseAdmin.storage
+            .from(this.bucketName)
+            .list(folderPath)
+
+          if (listError) {
+            console.warn(`⚠️ Could not list files in ${folderPath}:`, listError.message)
+            continue
+          }
+
+          if (files && files.length > 0) {
+            console.log(`📁 Found ${files.length} files in ${folderPath}`)
+            
+            // Delete all files in the folder
+            const filePaths = files.map(file => `${folderPath}/${file.name}`)
+            
+            console.log(`🗑️ Deleting files:`, filePaths)
+            
+            const { error: deleteError } = await supabaseAdmin.storage
+              .from(this.bucketName)
+              .remove(filePaths)
+
+            if (deleteError) {
+              console.error(`❌ Error deleting files from ${folderPath}:`, deleteError.message)
+              lastError = deleteError.message
+            } else {
+              console.log(`✅ Successfully deleted ${files.length} files from ${folderPath}`)
+              deletedAny = true
+              totalDeleted += files.length
+            }
+          } else {
+            console.log(`📭 No files found in ${folderPath}`)
+          }
+        } catch (error) {
+          console.warn(`⚠️ Error processing folder ${folderPath}:`, error)
+        }
+      }
+
+      console.log(`🏁 Storage deletion complete for product ${productId}. Total files deleted: ${totalDeleted}`)
+
+      if (!deletedAny && lastError) {
+        return { success: false, error: lastError }
+      }
+
+      return { success: true }
+    } catch (error) {
+      console.error('❌ Delete product images error:', error)
+      return { success: false, error: 'Delete failed' }
+    }
+  }
+
+  /**
    * Delete an image from storage
    * Note: This method should only be called from server-side code
    */
@@ -103,32 +187,45 @@ export class StorageService {
   }
 
   /**
-   * Get all images for a product
+   * Get all images for a product (supports both old and new folder structures)
    * Note: This method should only be called from server-side code
    */
-  async getProductImages(productId: string): Promise<StorageFile[]> {
+  async getProductImages(productId: string, categorySlug?: string): Promise<StorageFile[]> {
     try {
       if (typeof window !== 'undefined') {
         return []
       }
 
       const supabaseAdmin = createAdminClient()
-      const { data, error } = await supabaseAdmin.storage
-        .from(this.bucketName)
-        .list(productId)
+      
+      // Try both folder structures for backward compatibility
+      const folderPaths = [
+        categorySlug ? `categories/${categorySlug}/products/${productId}` : null,
+        `products/${productId}`,
+        productId // Old structure for backward compatibility
+      ].filter(Boolean) as string[]
 
-      if (error) {
-        console.error('Storage list error:', error)
-        return []
+      for (const folderPath of folderPaths) {
+        try {
+          const { data, error } = await supabaseAdmin.storage
+            .from(this.bucketName)
+            .list(folderPath)
+
+          if (!error && data && data.length > 0) {
+            // Transform Supabase FileObject to our StorageFile interface
+            return data.map(file => ({
+              name: file.name,
+              size: file.metadata?.size || 0,
+              type: file.metadata?.mimetype || 'application/octet-stream',
+              lastModified: file.updated_at ? new Date(file.updated_at).getTime() : Date.now()
+            }))
+          }
+        } catch (error) {
+          console.warn(`Warning: Could not list files in ${folderPath}:`, error)
+        }
       }
 
-      // Transform Supabase FileObject to our StorageFile interface
-      return (data || []).map(file => ({
-        name: file.name,
-        size: file.metadata?.size || 0,
-        type: file.metadata?.mimetype || 'application/octet-stream',
-        lastModified: file.updated_at ? new Date(file.updated_at).getTime() : Date.now()
-      }))
+      return []
     } catch (error) {
       console.error('List error:', error)
       return []
@@ -203,7 +300,24 @@ export class StorageService {
     
     try {
       const urlObj = new URL(url)
-      const pathParts = urlObj.pathname.split('/storage/')
+      
+      // Handle Supabase storage URL format: /storage/v1/object/public/bucket-name/path
+      const pathname = urlObj.pathname
+      const storageIndex = pathname.indexOf('/storage/v1/object/public/')
+      
+      if (storageIndex !== -1) {
+        const afterStorage = pathname.substring(storageIndex + '/storage/v1/object/public/'.length)
+        const pathParts = afterStorage.split('/')
+        
+        // Remove bucket name (first part) and get the file path
+        if (pathParts.length > 1) {
+          pathParts.shift() // Remove bucket name
+          return pathParts.join('/')
+        }
+      }
+      
+      // Fallback: try the old method
+      const pathParts = pathname.split('/storage/')
       if (pathParts.length > 1) {
         return pathParts[1]
       }

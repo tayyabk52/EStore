@@ -21,6 +21,7 @@ export async function POST(req: NextRequest) {
     const file = formData.get('file') as File
     const productId = formData.get('productId') as string
     const fileName = formData.get('fileName') as string
+    const categorySlug = formData.get('categorySlug') as string
     const storageType = formData.get('storageType') as string || 'supabase' // 'supabase' or 'local'
 
     if (!file) {
@@ -53,8 +54,8 @@ export async function POST(req: NextRequest) {
       // Upload to local public directory
       result = await uploadToLocalStorage(file, productId, fileName)
     } else {
-      // Upload to Supabase storage (default)
-      result = await storageService.uploadImage(file, productId, fileName)
+      // Upload to Supabase storage (default) with category organization
+      result = await storageService.uploadImage(file, productId, fileName, categorySlug)
     }
 
     if (result.error) {

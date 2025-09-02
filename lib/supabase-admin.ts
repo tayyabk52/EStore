@@ -461,7 +461,79 @@ export const productService = {
   },
 
   async delete(id: string) {
-    // Delete related records first
+    // First, get the product with its images and category info
+    const { data: product } = await supabaseAdmin
+      .from('Product')
+      .select(`
+        id,
+        title,
+        categoryId,
+        category:Category(slug),
+        images:ProductImage(id, url)
+      `)
+      .eq('id', id)
+      .single()
+
+    console.log(`Starting deletion of product ${id}:`, product?.title || 'Unknown Product')
+
+    // Delete images from storage
+    if (product) {
+      try {
+        const { storageService } = await import('./storage')
+        
+        // Extract category slug properly
+        let categorySlug: string | undefined
+        if (product.category && Array.isArray(product.category) && product.category.length > 0) {
+          categorySlug = product.category[0].slug
+        } else if (product.category && typeof product.category === 'object' && 'slug' in product.category) {
+          categorySlug = (product.category as any).slug
+        }
+
+        console.log(`Attempting to delete storage images for product ${id}, category: ${categorySlug || 'none'}`)
+        
+        // Try to delete images using the storage service
+        const result = await storageService.deleteProductImages(id, categorySlug)
+        
+        if (result.success) {
+          console.log(`✅ Successfully deleted storage images for product ${id}`)
+        } else {
+          console.warn(`⚠️ Could not delete some storage images for product ${id}:`, result.error)
+        }
+
+        // Additional fallback: try to delete images based on their URLs from database
+        if (product.images && Array.isArray(product.images) && product.images.length > 0) {
+          console.log(`Found ${product.images.length} image records in database, attempting individual deletion`)
+          
+          for (const image of product.images) {
+            if (image.url && storageService.isStorageUrl(image.url)) {
+              try {
+                const filePath = storageService.getFilePathFromUrl(image.url)
+                if (filePath) {
+                  const deleteResult = await storageService.deleteImage(filePath)
+                  if (deleteResult.success) {
+                    console.log(`✅ Deleted individual image: ${filePath}`)
+                  } else {
+                    console.warn(`⚠️ Failed to delete individual image: ${filePath}`, deleteResult.error)
+                  }
+                }
+              } catch (error) {
+                console.warn(`Warning: Could not delete individual image ${image.url}:`, error)
+              }
+            }
+          }
+        }
+        
+      } catch (error) {
+        console.error(`❌ Error during storage deletion for product ${id}:`, error)
+        // Continue with database deletion even if storage deletion fails
+      }
+    } else {
+      console.warn(`⚠️ Product ${id} not found for storage cleanup`)
+    }
+
+    console.log(`Proceeding with database cleanup for product ${id}`)
+
+    // Delete related records from database
     await supabaseAdmin
       .from('ProductImage')
       .delete()
@@ -472,13 +544,24 @@ export const productService = {
       .delete()
       .eq('productId', id)
 
+    // Delete product collections relationship
+    await supabaseAdmin
+      .from('ProductCollection')
+      .delete()
+      .eq('productId', id)
+
     // Delete product
     const { error } = await supabaseAdmin
       .from('Product')
       .delete()
       .eq('id', id)
 
-    if (error) throw error
+    if (error) {
+      console.error(`❌ Failed to delete product ${id} from database:`, error)
+      throw error
+    }
+    
+    console.log(`✅ Successfully deleted product ${id} and all related data`)
     return true
   }
 }
