@@ -84,8 +84,7 @@ const navigationItems = [
     icon: ShoppingCart,
     color: "text-orange-600",
     bgColor: "bg-orange-50",
-    description: "Order Management",
-    badge: "Soon"
+    description: "Order Management"
   },
   {
     name: "Customers",
@@ -93,8 +92,7 @@ const navigationItems = [
     icon: Users,
     color: "text-indigo-600",
     bgColor: "bg-indigo-50",
-    description: "Customer Database",
-    badge: "Soon"
+    description: "Customer Database"
   },
   {
     name: "Analytics",

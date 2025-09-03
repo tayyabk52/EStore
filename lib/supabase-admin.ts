@@ -114,6 +114,87 @@ export interface CustomerAddress {
   updatedAt: string
 }
 
+export interface Order {
+  id: string
+  userId: string
+  number: string
+  status: 'PENDING' | 'CONFIRMED' | 'PROCESSING' | 'SHIPPED' | 'DELIVERED' | 'CANCELLED'
+  paymentStatus: 'PAYMENT_PENDING' | 'AUTHORIZED' | 'PAID' | 'FAILED' | 'REFUNDED'
+  currency: string
+  subtotal: number
+  tax: number
+  shipping: number
+  discount: number
+  total: number
+  shippingAddressId?: string
+  billingAddressId?: string
+  placedAt?: string
+  notes?: string
+  metadata?: any
+  paymentProvider?: string
+  paymentIntentId?: string
+  paymentData?: any
+  createdAt: string
+  updatedAt: string
+}
+
+export interface OrderItem {
+  id: string
+  orderId: string
+  productId?: string
+  variantId?: string
+  quantity: number
+  unitPrice: number
+  currency: string
+  productName: string
+  sku: string
+  imageUrl?: string
+  createdAt: string
+}
+
+export interface OrderAddress {
+  id: string
+  userId?: string
+  label?: string
+  fullName: string
+  line1: string
+  line2?: string
+  city: string
+  region?: string
+  postalCode?: string
+  countryCode: string
+  phone?: string
+  isDefaultShip: boolean
+  isDefaultBill: boolean
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Payment {
+  id: string
+  orderId: string
+  provider: string
+  status: 'PAYMENT_PENDING' | 'AUTHORIZED' | 'PAID' | 'FAILED' | 'REFUNDED'
+  amount: number
+  currency: string
+  transactionId?: string
+  data?: any
+  createdAt: string
+  updatedAt: string
+}
+
+export interface Shipment {
+  id: string
+  orderId: string
+  status: 'LABEL_CREATED' | 'SHIPPED' | 'IN_TRANSIT' | 'DELIVERED' | 'RETURNED'
+  carrier?: string
+  trackingNumber?: string
+  shippedAt?: string
+  deliveredAt?: string
+  createdAt: string
+  updatedAt: string
+}
+
 // Category operations
 export const categoryService = {
   async getAll() {
@@ -610,6 +691,47 @@ export const utils = {
       .replace(/[^a-z0-9\s-]/g, '')
       .replace(/\s+/g, '-')
       .replace(/-+/g, '-')
+  },
+
+  async generateUniqueSlug(baseTitle: string, excludeId?: string): Promise<string> {
+    const slug = this.slugify(baseTitle)
+    let counter = 0
+    let finalSlug = slug
+    
+    while (true) {
+      // Check if slug exists
+      let query = supabaseAdmin
+        .from('Product')
+        .select('id')
+        .eq('slug', finalSlug)
+      
+      // If we're updating a product, exclude its current ID
+      if (excludeId) {
+        query = query.neq('id', excludeId)
+      }
+      
+      const { error } = await query.single()
+      
+      if (error && error.code === 'PGRST116') {
+        // No rows returned - slug is unique
+        return finalSlug
+      }
+      
+      if (error) {
+        console.error('Error checking slug uniqueness:', error)
+        // If there's an error, fall back to adding timestamp
+        return `${slug}-${Date.now()}`
+      }
+      
+      // Slug exists, try with counter
+      counter++
+      finalSlug = `${slug}-${counter}`
+      
+      // Safety check to prevent infinite loop
+      if (counter > 100) {
+        return `${slug}-${Date.now()}`
+      }
+    }
   },
 
   validateAdminKey(req: any): boolean {
@@ -1111,6 +1233,357 @@ export const customerService = {
       if (error) throw error
       
       console.log('✅ Created test customers:', data.length)
+      return data
+    } catch (error) {
+      console.error('❌ Error creating test data:', error)
+      throw error
+    }
+  }
+}
+
+export const orderService = {
+  async getAll(options: { page?: number; perPage?: number; search?: string; status?: string } = {}) {
+    const { page = 1, perPage = 20, search = '', status = '' } = options
+    const offset = (page - 1) * perPage
+
+    let query = supabaseAdmin
+      .from('Order')
+      .select(`
+        *,
+        orderItems:OrderItem(*),
+        shippingAddress:Address!shippingAddressId(*),
+        billingAddress:Address!billingAddressId(*),
+        payments:Payment(*),
+        shipments:Shipment(*)
+      `)
+      .order('createdAt', { ascending: false })
+      .range(offset, offset + perPage - 1)
+
+    // Apply search filter
+    if (search) {
+      query = query.or(`number.ilike.%${search}%,notes.ilike.%${search}%`)
+    }
+
+    // Apply status filter
+    if (status) {
+      query = query.eq('status', status)
+    }
+
+    const { data, error, count } = await query
+
+    if (error) throw error
+
+    // Get total count for pagination
+    let totalQuery = supabaseAdmin
+      .from('Order')
+      .select('*', { count: 'exact', head: true })
+
+    if (search) {
+      totalQuery = totalQuery.or(`number.ilike.%${search}%,notes.ilike.%${search}%`)
+    }
+
+    if (status) {
+      totalQuery = totalQuery.eq('status', status)
+    }
+
+    const { count: total } = await totalQuery
+
+    return {
+      items: data || [],
+      total: total || 0,
+      page,
+      perPage
+    }
+  },
+
+  async getById(id: string) {
+    const { data, error } = await supabaseAdmin
+      .from('Order')
+      .select(`
+        *,
+        orderItems:OrderItem(*),
+        shippingAddress:Address!shippingAddressId(*),
+        billingAddress:Address!billingAddressId(*),
+        payments:Payment(*),
+        shipments:Shipment(*)
+      `)
+      .eq('id', id)
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async create(orderData: Omit<Order, 'id' | 'createdAt' | 'updatedAt'>) {
+    const { data, error } = await supabaseAdmin
+      .from('Order')
+      .insert([{
+        id: randomUUID(),
+        ...orderData,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async update(id: string, updates: Partial<Order>) {
+    const { data, error } = await supabaseAdmin
+      .from('Order')
+      .update({
+        ...updates,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async delete(id: string) {
+    const { error } = await supabaseAdmin
+      .from('Order')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
+  async updateStatus(id: string, status: Order['status']) {
+    return this.update(id, { 
+      status,
+      ...(status === 'CONFIRMED' && { placedAt: new Date().toISOString() })
+    })
+  },
+
+  async updatePaymentStatus(id: string, paymentStatus: Order['paymentStatus']) {
+    return this.update(id, { paymentStatus })
+  },
+
+  async getOrderItems(orderId: string) {
+    const { data, error } = await supabaseAdmin
+      .from('OrderItem')
+      .select('*')
+      .eq('orderId', orderId)
+
+    if (error) throw error
+    return data || []
+  },
+
+  async addOrderItem(orderItem: Omit<OrderItem, 'id' | 'createdAt'>) {
+    const { data, error } = await supabaseAdmin
+      .from('OrderItem')
+      .insert([{
+        ...orderItem,
+        createdAt: new Date().toISOString()
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updateOrderItem(id: string, updates: Partial<OrderItem>) {
+    const { data, error } = await supabaseAdmin
+      .from('OrderItem')
+      .update(updates)
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async deleteOrderItem(id: string) {
+    const { error } = await supabaseAdmin
+      .from('OrderItem')
+      .delete()
+      .eq('id', id)
+
+    if (error) throw error
+  },
+
+  async getPayments(orderId: string) {
+    const { data, error } = await supabaseAdmin
+      .from('Payment')
+      .select('*')
+      .eq('orderId', orderId)
+
+    if (error) throw error
+    return data || []
+  },
+
+  async addPayment(payment: Omit<Payment, 'id' | 'createdAt' | 'updatedAt'>) {
+    const { data, error } = await supabaseAdmin
+      .from('Payment')
+      .insert([{
+        ...payment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updatePayment(id: string, updates: Partial<Payment>) {
+    const { data, error } = await supabaseAdmin
+      .from('Payment')
+      .update({
+        ...updates,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async getShipments(orderId: string) {
+    const { data, error } = await supabaseAdmin
+      .from('Shipment')
+      .select('*')
+      .eq('orderId', orderId)
+
+    if (error) throw error
+    return data || []
+  },
+
+  async addShipment(shipment: Omit<Shipment, 'id' | 'createdAt' | 'updatedAt'>) {
+    const { data, error } = await supabaseAdmin
+      .from('Shipment')
+      .insert([{
+        ...shipment,
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }])
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async updateShipment(id: string, updates: Partial<Shipment>) {
+    const { data, error } = await supabaseAdmin
+      .from('Shipment')
+      .update({
+        ...updates,
+        updatedAt: new Date().toISOString()
+      })
+      .eq('id', id)
+      .select()
+      .single()
+
+    if (error) throw error
+    return data
+  },
+
+  async getOrderStats() {
+    // Get total orders count
+    const { count: totalOrders } = await supabaseAdmin
+      .from('Order')
+      .select('*', { count: 'exact', head: true })
+
+    // Get orders by status
+    const { data: statusCounts } = await supabaseAdmin
+      .from('Order')
+      .select('status')
+      .then(({ data }) => {
+        const counts: Record<string, number> = {}
+        data?.forEach(order => {
+          counts[order.status] = (counts[order.status] || 0) + 1
+        })
+        return { data: counts }
+      })
+
+    // Get total revenue
+    const { data: revenueData } = await supabaseAdmin
+      .from('Order')
+      .select('total')
+      .eq('paymentStatus', 'PAID')
+
+    const totalRevenue = revenueData?.reduce((sum, order) => sum + Number(order.total), 0) || 0
+
+    return {
+      totalOrders: totalOrders || 0,
+      statusCounts: statusCounts || {},
+      totalRevenue
+    }
+  },
+
+  async createTestData() {
+    const testOrders = [
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        number: 'ORD-001',
+        status: 'DELIVERED' as const,
+        paymentStatus: 'PAID' as const,
+        currency: 'PKR',
+        subtotal: 15000,
+        tax: 1500,
+        shipping: 500,
+        discount: 0,
+        total: 17000,
+        notes: 'Test order 1',
+        createdAt: new Date(Date.now() - 7 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        number: 'ORD-002',
+        status: 'PROCESSING' as const,
+        paymentStatus: 'PAID' as const,
+        currency: 'PKR',
+        subtotal: 25000,
+        tax: 2500,
+        shipping: 800,
+        discount: 1000,
+        total: 27300,
+        notes: 'Test order 2',
+        createdAt: new Date(Date.now() - 3 * 24 * 60 * 60 * 1000).toISOString(),
+        updatedAt: new Date().toISOString()
+      },
+      {
+        id: randomUUID(),
+        userId: randomUUID(),
+        number: 'ORD-003',
+        status: 'PENDING' as const,
+        paymentStatus: 'PAYMENT_PENDING' as const,
+        currency: 'PKR',
+        subtotal: 8000,
+        tax: 800,
+        shipping: 300,
+        discount: 0,
+        total: 9100,
+        notes: 'Test order 3',
+        createdAt: new Date().toISOString(),
+        updatedAt: new Date().toISOString()
+      }
+    ]
+
+    try {
+      const { data, error } = await supabaseAdmin
+        .from('Order')
+        .insert(testOrders)
+        .select()
+
+      if (error) throw error
+      
+      console.log('✅ Created test orders:', data.length)
       return data
     } catch (error) {
       console.error('❌ Error creating test data:', error)

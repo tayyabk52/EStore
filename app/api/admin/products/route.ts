@@ -63,7 +63,10 @@ export async function POST(req: NextRequest) {
     if (!title) return NextResponse.json({ error: 'Title is required' }, { status: 400 })
     
     const incomingSlug: string | undefined = body.slug?.toString().trim()
-    const slug = incomingSlug && incomingSlug.length > 0 ? utils.slugify(incomingSlug) : utils.slugify(title)
+    const baseSlug = incomingSlug && incomingSlug.length > 0 ? incomingSlug : title
+    
+    // Generate unique slug to prevent duplicates
+    const slug = await utils.generateUniqueSlug(baseSlug)
 
     // Clean product data - remove any id fields that might be passed
     const { id, createdAt, updatedAt, ...bodyData } = body
@@ -150,6 +153,14 @@ export async function PUT(req: NextRequest) {
       ...updates,
       description: updates.description || 'No description provided',
       categoryId: updates.categoryId && updates.categoryId.trim() !== '' ? updates.categoryId : null,
+    }
+
+    // Handle slug update with uniqueness check
+    if (updates.slug || updates.title) {
+      const baseSlug = updates.slug?.toString().trim() || updates.title?.toString().trim()
+      if (baseSlug) {
+        updateData.slug = await utils.generateUniqueSlug(baseSlug, id)
+      }
     }
 
     const images = body.images?.map((img: any, idx: number) => {
